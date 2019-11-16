@@ -4,7 +4,7 @@ h = tf.constant("Hello")
 w = tf.constant(" World!")
 hw = h + w
 
-with tf.compat.v1.Session() as sess:
+with tf.Session() as sess:
     ans = sess.run(hw)
 
 print(ans)

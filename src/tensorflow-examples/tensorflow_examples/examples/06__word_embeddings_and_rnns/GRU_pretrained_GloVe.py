@@ -182,7 +182,7 @@ correct_prediction = tf.equal(tf.argmax(_labels, 1),
 accuracy = (tf.reduce_mean(tf.cast(correct_prediction,
                                    tf.float32)))*100
 
-with tf.compat.v1.Session() as sess:
+with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     sess.run(embedding_init,
              feed_dict={embedding_placeholder: embedding_matrix})

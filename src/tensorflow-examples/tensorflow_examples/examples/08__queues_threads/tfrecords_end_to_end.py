@@ -86,7 +86,7 @@ loss_mean = tf.reduce_mean(loss)
 
 train_op = tf.train.AdamOptimizer().minimize(loss)
 
-sess = tf.compat.v1.Session()
+sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 init = tf.local_variables_initializer()
