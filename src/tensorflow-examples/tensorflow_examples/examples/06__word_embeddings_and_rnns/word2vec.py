@@ -8,7 +8,7 @@ import os
 import math
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib.tensorboard.plugins import projector
+from tensorboard.plugins import projector
 
 
 batch_size = 64

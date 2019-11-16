@@ -1,15 +1,15 @@
-from tensorflow_examples.tutorials.mnist import input_data
+from keras.datasets.mnist import load_data
 import tensorflow as tf
 import numpy as np
 
-from layers import conv_layer, max_pool_2x2, full_layer
+from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
 DATA_DIR = '/tmp/data'
 MINIBATCH_SIZE = 50
 STEPS = 5000
 
 
-mnist = input_data.read_data_sets(DATA_DIR, one_hot=True)
+mnist = load_data(path=DATA_DIR)
 
 x = tf.compat.v1.placeholder(tf.float32, shape=[None, 784])
 y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 10])

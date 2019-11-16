@@ -1,13 +1,11 @@
 import tensorflow as tf
-from tensorflow_examples.tutorials.mnist import input_data
-
+from keras.datasets.mnist import load_data
 
 DATA_DIR = '/tmp/data'
 NUM_STEPS = 1000
 MINIBATCH_SIZE = 100
 
-
-data = input_data.read_data_sets(DATA_DIR, one_hot=True)
+data = load_data(path=DATA_DIR)
 
 x = tf.compat.v1.placeholder(tf.float32, [None, 784])
 W = tf.Variable(tf.zeros([784, 10]))
@@ -24,7 +22,6 @@ correct_mask = tf.equal(tf.argmax(input=y_pred, axis=1), tf.argmax(input=y_true,
 accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_mask, tf.float32))
 
 with tf.compat.v1.Session() as sess:
-
     # Train
     sess.run(tf.compat.v1.global_variables_initializer())
     for _ in range(NUM_STEPS):
@@ -34,4 +31,4 @@ with tf.compat.v1.Session() as sess:
     # Test
     ans = sess.run(accuracy, feed_dict={x: data.test.images, y_true: data.test.labels})
 
-print("Accuracy: {:.4}%".format(ans*100))
+print("Accuracy: {:.4}%".format(ans * 100))

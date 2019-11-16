@@ -9,17 +9,19 @@ Created on Thu Jan 26 00:41:43 2017
 
 import os
 import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets import mnist
+from keras.datasets.mnist import load_data
 
 #### WRITE TFRECORDS  # noqa
 save_dir = "D:\\mnist"
 
 # Download data to save_Dir
-data_sets = mnist.read_data_sets(save_dir,
-                                 dtype=tf.uint8,
-                                 reshape=False,
-                                 validation_size=1000)
 
+data_sets = load_data(
+    path=save_dir,
+    # dtype=tf.uint8,
+    # reshape=False,
+    # validation_size=1000
+)
 data_splits = ["train", "test", "validation"]
 for d in range(len(data_splits)):
     print("saving " + data_splits[d])
@@ -43,7 +45,6 @@ for d in range(len(data_splits)):
         writer.write(example.SerializeToString())
     writer.close()
 
-
 # READ
 NUM_EPOCHS = 10
 
@@ -51,7 +52,6 @@ filename = os.path.join("D:\\mnist", "train.tfrecords")
 
 filename_queue = tf.compat.v1.train.string_input_producer(
     [filename], num_epochs=NUM_EPOCHS)
-
 
 reader = tf.compat.v1.TFRecordReader()
 _, serialized_example = reader.read(filename_queue)
@@ -65,11 +65,9 @@ features = tf.io.parse_single_example(
 image = tf.io.decode_raw(features['image_raw'], tf.uint8)
 image.set_shape([784])
 
-
 image = tf.cast(image, tf.float32) * (1. / 255) - 0.5
 
 label = tf.cast(features['label'], tf.int32)
-
 
 # Shuffle the examples + batch
 images_batch, labels_batch = tf.compat.v1.train.shuffle_batch(
@@ -77,8 +75,7 @@ images_batch, labels_batch = tf.compat.v1.train.shuffle_batch(
     capacity=2000,
     min_after_dequeue=1000)
 
-
-W = tf.compat.v1.get_variable("W", [28*28, 10])
+W = tf.compat.v1.get_variable("W", [28 * 28, 10])
 y_pred = tf.matmul(images_batch, W)
 loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_pred, labels=labels_batch)
 
@@ -108,7 +105,6 @@ except tf.errors.OutOfRangeError:
 finally:
     # When done, ask the threads to stop.
     coord.request_stop()
-
 
 # example -- get image,label
 img1, lbl1 = sess.run([image, label])

@@ -6,19 +6,22 @@ Created on Thu Feb 23 15:59:07 2017
 """
 
 from __future__ import print_function
-import os
-import tensorflow as tf
-from tensorflow.contrib.learn.python.learn.datasets import mnist
-import numpy as np
 
+import os
+
+import numpy as np
+import tensorflow as tf
+from keras.datasets.mnist import load_data
 
 save_dir = "D:\\mnist"
 
 # Download data to save_dir
-data_sets = mnist.read_data_sets(save_dir,
-                                 dtype=tf.uint8,
-                                 reshape=False,
-                                 validation_size=1000)
+data_sets = load_data(
+    path=save_dir,
+    # dtype=tf.uint8,
+    # reshape=False,
+    # validation_size=1000
+)
 
 data_splits = ["train", "test", "validation"]
 for d in range(len(data_splits)):
@@ -48,7 +51,6 @@ for d in range(len(data_splits)):
                         value=[image]))}))
         writer.write(example.SerializeToString())
     writer.close()
-
 
 filename = os.path.join(save_dir, 'train.tfrecords')
 record_iterator = tf.compat.v1.python_io.tf_record_iterator(filename)
