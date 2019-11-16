@@ -1,11 +1,10 @@
-import pickle
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
+import pickle
 
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
 DATA_PATH = "path/to/CIFAR10"
 BATCH_SIZE = 50
@@ -42,6 +41,7 @@ class CifarLoader(object):
     Load and mange the CIFAR dataset.
     (for any practical use there is no reason not to use the built-in dataset handler instead)
     """
+
     def __init__(self, source_files):
         self._source = source_files
         self._i = 0
@@ -52,14 +52,14 @@ class CifarLoader(object):
         data = [unpickle(f) for f in self._source]
         images = np.vstack([d["data"] for d in data])
         n = len(images)
-        self.images = images.reshape(n, 3, 32, 32).transpose(0, 2, 3, 1)\
-            .astype(float) / 255
+        self.images = images.reshape(n, 3, 32, 32).transpose(0, 2, 3, 1) \
+                          .astype(float) / 255
         self.labels = one_hot(np.hstack([d["labels"] for d in data]), 10)
         return self
 
     def next_batch(self, batch_size):
-        x, y = self.images[self._i:self._i+batch_size], \
-               self.labels[self._i:self._i+batch_size]
+        x, y = self.images[self._i:self._i + batch_size], \
+               self.labels[self._i:self._i + batch_size]
         self._i = (self._i + batch_size) % len(self.images)
         return x, y
 
@@ -71,7 +71,7 @@ class CifarLoader(object):
 
 class CifarDataManager(object):
     def __init__(self):
-        self.train = CifarLoader(["data_batch_{}".format(i) for i in range(1, 6)])\
+        self.train = CifarLoader(["data_batch_{}".format(i) for i in range(1, 6)]) \
             .load()
         self.test = CifarLoader(["test_batch"]).load()
 
@@ -100,7 +100,7 @@ def run_simple_net():
     y_conv = full_layer(full1_drop, 10)
 
     cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
-                                                                           labels=tf.stop_gradient(y_)))
+                                                                                        labels=tf.stop_gradient(y_)))
     train_step = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(cross_entropy)
 
     correct_prediction = tf.equal(tf.argmax(input=y_conv, axis=1), tf.argmax(input=y_, axis=1))
@@ -159,7 +159,7 @@ def build_second_net():
     y_conv = full_layer(full1_drop, 10)
 
     cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
-                                                                           labels=tf.stop_gradient(y_)))
+                                                                                        labels=tf.stop_gradient(y_)))
     train_step = tf.compat.v1.train.AdamOptimizer(5e-4).minimize(cross_entropy)  # noqa
 
     correct_prediction = tf.equal(tf.argmax(input=y_conv, axis=1), tf.argmax(input=y_, axis=1))

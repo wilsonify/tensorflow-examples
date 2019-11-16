@@ -1,0 +1,45 @@
+from tensorflow_examples.examples.convolutional_neural_networks import cifar_cnn
+
+help(cifar_cnn)
+from tensorflow_examples.examples.convolutional_neural_networks import mnist_cnn
+
+help(mnist_cnn)
+from tensorflow_examples.examples.distributed_tensorflow import distribute
+
+help(distribute)
+from tensorflow_examples.examples.distributed_tensorflow import distribute_run
+
+help(distribute_run)
+from tensorflow_examples.examples.queues_threads import queue_basic
+
+help(queue_basic)
+from tensorflow_examples.examples.queues_threads import tfrecords_end_to_end
+
+help(tfrecords_end_to_end)
+from tensorflow_examples.examples.queues_threads import tfrecords_read_write
+
+help(tfrecords_read_write)
+from tensorflow_examples.examples.text_and_visualizations import BasicRNNCell
+
+help(BasicRNNCell)
+from tensorflow_examples.examples.text_and_visualizations import LSTM_supervised_embeddings
+
+help(LSTM_supervised_embeddings)
+from tensorflow_examples.examples.text_and_visualizations import scan_example
+
+help(scan_example)
+from tensorflow_examples.examples.text_and_visualizations import vanilla_rnn_with_tfboard
+
+help(vanilla_rnn_with_tfboard)
+from tensorflow_examples.examples.up_and_running import hello_world
+
+help(hello_world)
+from tensorflow_examples.examples.up_and_running import softmax
+
+help(softmax)
+from tensorflow_examples.examples.word_embeddings_and_rnns import GRU_pretrained_GloVe
+
+help(GRU_pretrained_GloVe)
+from tensorflow_examples.examples.word_embeddings_and_rnns import word2vec
+
+help(word2vec)
