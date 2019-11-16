@@ -9,6 +9,7 @@ LOG_DIR = "/tmp/log"
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     parameter_servers = ["localhost:2222"]
     workers = ["localhost:2223",
                "localhost:2224",

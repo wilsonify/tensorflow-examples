@@ -18,6 +18,7 @@ hidden_layer_size = 128
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     mnist = load_data(path="/tmp/data/")
 
     _inputs = tf.compat.v1.placeholder(tf.float32,

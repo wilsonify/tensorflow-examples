@@ -24,6 +24,7 @@ digit_to_word_map[0] = "PAD_TOKEN"
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     even_sentences = []
     odd_sentences = []
     seqlens = []

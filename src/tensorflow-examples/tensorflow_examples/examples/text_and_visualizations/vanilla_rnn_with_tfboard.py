@@ -12,6 +12,7 @@ from keras.datasets.mnist import load_data
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     mnist = load_data(path="/tmp/data/")
 
     # Define some parameters

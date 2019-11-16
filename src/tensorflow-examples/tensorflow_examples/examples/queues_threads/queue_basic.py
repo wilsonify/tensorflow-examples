@@ -13,6 +13,7 @@ import tensorflow as tf
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     sess = tf.compat.v1.InteractiveSession()
 
     queue1 = tf.queue.FIFOQueue(capacity=10, dtypes=[tf.string])

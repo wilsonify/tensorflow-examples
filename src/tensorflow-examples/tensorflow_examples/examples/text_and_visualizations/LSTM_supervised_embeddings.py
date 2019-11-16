@@ -87,6 +87,7 @@ def get_sentence_batch(batch_size, data_x,
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
 
     _inputs = tf.compat.v1.placeholder(tf.int32, shape=[batch_size, times_steps])
     _labels = tf.compat.v1.placeholder(tf.float32, shape=[batch_size, num_classes])

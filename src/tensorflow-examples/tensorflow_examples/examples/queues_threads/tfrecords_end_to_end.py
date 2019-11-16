@@ -17,6 +17,7 @@ save_dir = "D:\\mnist"
 
 # Download data to save_Dir
 def main():
+    tf.compat.v1.disable_eager_execution()
     data_sets = load_data(
         path=save_dir,
         # dtype=tf.uint8,

@@ -10,6 +10,7 @@ import tensorflow as tf
 
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     elems = np.array(["T", "e", "n", "s", "o", "r", " ", "F", "l", "o", "w"])
     scan_sum = tf.scan(lambda a, x: a + x, elems)
 

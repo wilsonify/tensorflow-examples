@@ -16,6 +16,7 @@ from keras.datasets.mnist import load_data
 save_dir = "D:\\mnist"
 
 def main():
+    tf.compat.v1.disable_eager_execution()
     # Download data to save_dir
     data_sets = load_data(
         path=save_dir,
