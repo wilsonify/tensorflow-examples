@@ -1,3 +1,5 @@
+import logging
+
 import tensorflow as tf
 from keras.datasets.mnist import load_data
 
@@ -8,22 +10,22 @@ MINIBATCH_SIZE = 100
 
 def main():
     data = load_data(path=DATA_DIR)
-
-    x = tf.compat.v1.placeholder(tf.float32, [None, 784])
-    W = tf.Variable(tf.zeros([784, 10]))
-
-    y_true = tf.compat.v1.placeholder(tf.float32, [None, 10])
-    y_pred = tf.matmul(x, W)
-
-    cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(
-        logits=y_pred, labels=tf.stop_gradient(y_true)))
-
-    gd_step = tf.compat.v1.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
-    correct_mask = tf.equal(tf.argmax(input=y_pred, axis=1), tf.argmax(input=y_true, axis=1))
-    accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_mask, tf.float32))
-
+    logging.debug("%r", "type(data) = {}".format(type(data)))
     with tf.compat.v1.Session() as sess:
+        x = tf.compat.v1.placeholder(tf.float32, [None, 784])
+        W = tf.Variable(tf.zeros([784, 10]))
+
+        y_true = tf.compat.v1.placeholder(tf.float32, [None, 10])
+        y_pred = tf.matmul(x, W)
+
+        cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(
+            logits=y_pred, labels=tf.stop_gradient(y_true)))
+
+        gd_step = tf.compat.v1.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+
+        correct_mask = tf.equal(tf.argmax(input=y_pred, axis=1), tf.argmax(input=y_true, axis=1))
+        accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_mask, tf.float32))
+
         # Train
         sess.run(tf.compat.v1.global_variables_initializer())
         for _ in range(NUM_STEPS):
@@ -37,4 +39,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig()
     main()
