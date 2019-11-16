@@ -26,7 +26,7 @@ for d in range(len(data_splits)):
     data_set = data_sets[d]
 
     filename = os.path.join(save_dir, data_splits[d] + '.tfrecords')
-    writer = tf.python_io.TFRecordWriter(filename)
+    writer = tf.io.TFRecordWriter(filename)
     for index in range(data_set.images.shape[0]):
         image = data_set.images[index].tostring()
         example = tf.train.Example(features=tf.train.Features(feature={
@@ -49,20 +49,20 @@ NUM_EPOCHS = 10
 
 filename = os.path.join("D:\\mnist", "train.tfrecords")
 
-filename_queue = tf.train.string_input_producer(
+filename_queue = tf.compat.v1.train.string_input_producer(
     [filename], num_epochs=NUM_EPOCHS)
 
 
-reader = tf.TFRecordReader()
+reader = tf.compat.v1.TFRecordReader()
 _, serialized_example = reader.read(filename_queue)
-features = tf.parse_single_example(
-    serialized_example,
+features = tf.io.parse_single_example(
+    serialized=serialized_example,
     features={
-        'image_raw': tf.FixedLenFeature([], tf.string),
-        'label': tf.FixedLenFeature([], tf.int64),
+        'image_raw': tf.io.FixedLenFeature([], tf.string),
+        'label': tf.io.FixedLenFeature([], tf.int64),
     })
 
-image = tf.decode_raw(features['image_raw'], tf.uint8)
+image = tf.io.decode_raw(features['image_raw'], tf.uint8)
 image.set_shape([784])
 
 
@@ -72,24 +72,24 @@ label = tf.cast(features['label'], tf.int32)
 
 
 # Shuffle the examples + batch
-images_batch, labels_batch = tf.train.shuffle_batch(
+images_batch, labels_batch = tf.compat.v1.train.shuffle_batch(
     [image, label], batch_size=128,
     capacity=2000,
     min_after_dequeue=1000)
 
 
-W = tf.get_variable("W", [28*28, 10])
+W = tf.compat.v1.get_variable("W", [28*28, 10])
 y_pred = tf.matmul(images_batch, W)
 loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y_pred, labels=labels_batch)
 
-loss_mean = tf.reduce_mean(loss)
+loss_mean = tf.reduce_mean(input_tensor=loss)
 
-train_op = tf.train.AdamOptimizer().minimize(loss)
+train_op = tf.compat.v1.train.AdamOptimizer().minimize(loss)
 
-sess = tf.Session()
-init = tf.global_variables_initializer()
+sess = tf.compat.v1.Session()
+init = tf.compat.v1.global_variables_initializer()
 sess.run(init)
-init = tf.local_variables_initializer()
+init = tf.compat.v1.local_variables_initializer()
 sess.run(init)
 
 # coordinator

@@ -77,9 +77,9 @@ class CifarDataManager(object):
 def run_simple_net():
     cifar = CifarDataManager()
 
-    x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
-    y_ = tf.placeholder(tf.float32, shape=[None, 10])
-    keep_prob = tf.placeholder(tf.float32)
+    x = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
+    y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 10])
+    keep_prob = tf.compat.v1.placeholder(tf.float32)
 
     conv1 = conv_layer(x, shape=[5, 5, 3, 32])
     conv1_pool = max_pool_2x2(conv1)
@@ -90,19 +90,19 @@ def run_simple_net():
     conv3 = conv_layer(conv2_pool, shape=[5, 5, 64, 128])
     conv3_pool = max_pool_2x2(conv3)
     conv3_flat = tf.reshape(conv3_pool, [-1, 4 * 4 * 128])
-    conv3_drop = tf.nn.dropout(conv3_flat, keep_prob=keep_prob)
+    conv3_drop = tf.nn.dropout(conv3_flat, rate=1 - (keep_prob))
 
     full_1 = tf.nn.relu(full_layer(conv3_drop, 512))
-    full1_drop = tf.nn.dropout(full_1, keep_prob=keep_prob)
+    full1_drop = tf.nn.dropout(full_1, rate=1 - (keep_prob))
 
     y_conv = full_layer(full1_drop, 10)
 
-    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
-                                                                           labels=y_))
-    train_step = tf.train.AdamOptimizer(1e-3).minimize(cross_entropy)
+    cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
+                                                                           labels=tf.stop_gradient(y_)))
+    train_step = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(cross_entropy)
 
-    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    correct_prediction = tf.equal(tf.argmax(input=y_conv, axis=1), tf.argmax(input=y_, axis=1))
+    accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))
 
     def test(sess):
         X = cifar.test.images.reshape(10, 1000, 32, 32, 3)
@@ -111,8 +111,8 @@ def run_simple_net():
                        for i in range(10)])
         print("Accuracy: {:.4}%".format(acc * 100))
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         for i in range(STEPS):
             batch = cifar.train.next_batch(BATCH_SIZE)
@@ -125,9 +125,9 @@ def run_simple_net():
 
 
 def build_second_net():
-    x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
-    y_ = tf.placeholder(tf.float32, shape=[None, 10])
-    keep_prob = tf.placeholder(tf.float32)
+    x = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
+    y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 10])
+    keep_prob = tf.compat.v1.placeholder(tf.float32)
 
     C1, C2, C3 = 32, 64, 128
     F1 = 600
@@ -136,32 +136,32 @@ def build_second_net():
     conv1_2 = conv_layer(conv1_1, shape=[3, 3, C1, C1])
     conv1_3 = conv_layer(conv1_2, shape=[3, 3, C1, C1])
     conv1_pool = max_pool_2x2(conv1_3)
-    conv1_drop = tf.nn.dropout(conv1_pool, keep_prob=keep_prob)
+    conv1_drop = tf.nn.dropout(conv1_pool, rate=1 - (keep_prob))
 
     conv2_1 = conv_layer(conv1_drop, shape=[3, 3, C1, C2])
     conv2_2 = conv_layer(conv2_1, shape=[3, 3, C2, C2])
     conv2_3 = conv_layer(conv2_2, shape=[3, 3, C2, C2])
     conv2_pool = max_pool_2x2(conv2_3)
-    conv2_drop = tf.nn.dropout(conv2_pool, keep_prob=keep_prob)
+    conv2_drop = tf.nn.dropout(conv2_pool, rate=1 - (keep_prob))
 
     conv3_1 = conv_layer(conv2_drop, shape=[3, 3, C2, C3])
     conv3_2 = conv_layer(conv3_1, shape=[3, 3, C3, C3])
     conv3_3 = conv_layer(conv3_2, shape=[3, 3, C3, C3])
-    conv3_pool = tf.nn.max_pool(conv3_3, ksize=[1, 8, 8, 1], strides=[1, 8, 8, 1], padding='SAME')
+    conv3_pool = tf.nn.max_pool2d(input=conv3_3, ksize=[1, 8, 8, 1], strides=[1, 8, 8, 1], padding='SAME')
     conv3_flat = tf.reshape(conv3_pool, [-1, C3])
-    conv3_drop = tf.nn.dropout(conv3_flat, keep_prob=keep_prob)
+    conv3_drop = tf.nn.dropout(conv3_flat, rate=1 - (keep_prob))
 
     full1 = tf.nn.relu(full_layer(conv3_drop, F1))
-    full1_drop = tf.nn.dropout(full1, keep_prob=keep_prob)
+    full1_drop = tf.nn.dropout(full1, rate=1 - (keep_prob))
 
     y_conv = full_layer(full1_drop, 10)
 
-    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
-                                                                           labels=y_))
-    train_step = tf.train.AdamOptimizer(5e-4).minimize(cross_entropy)  # noqa
+    cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(logits=y_conv,
+                                                                           labels=tf.stop_gradient(y_)))
+    train_step = tf.compat.v1.train.AdamOptimizer(5e-4).minimize(cross_entropy)  # noqa
 
-    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))  # noqa
+    correct_prediction = tf.equal(tf.argmax(input=y_conv, axis=1), tf.argmax(input=y_, axis=1))
+    accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))  # noqa
 
     # Plug this into the test procedure as above to continue...
 

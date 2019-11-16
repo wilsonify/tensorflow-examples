@@ -11,9 +11,9 @@ import tensorflow as tf
 import threading
 import time
 
-sess = tf.InteractiveSession()
+sess = tf.compat.v1.InteractiveSession()
 
-queue1 = tf.FIFOQueue(capacity=10, dtypes=[tf.string])
+queue1 = tf.queue.FIFOQueue(capacity=10, dtypes=[tf.string])
 
 enque_op = queue1.enqueue(["F"])
 # size is 0 before run
@@ -40,7 +40,7 @@ x.eval()
 # Hangs forever if queue empty if running INTERACTIVELY
 
 # for dequeue many, need to specify shapes in advance...
-queue1 = tf.FIFOQueue(capacity=10, dtypes=[tf.string], shapes=[()])
+queue1 = tf.queue.FIFOQueue(capacity=10, dtypes=[tf.string], shapes=[()])
 # ....
 inputs = queue1.dequeue_many(4)
 
@@ -48,8 +48,8 @@ inputs.eval()
 
 
 # single queue, but execute sess.run calls in parallel...
-gen_random_normal = tf.random_normal(shape=())
-queue = tf.FIFOQueue(capacity=100, dtypes=[tf.float32], shapes=())
+gen_random_normal = tf.random.normal(shape=())
+queue = tf.queue.FIFOQueue(capacity=100, dtypes=[tf.float32], shapes=())
 enque = queue.enqueue(gen_random_normal)
 
 
@@ -77,8 +77,8 @@ sess.run(queue.size())
 # A coordinator for threads.
 # a simple mechanism to coordinate the termination of a set of threads
 
-gen_random_normal = tf.random_normal(shape=())
-queue = tf.FIFOQueue(capacity=100, dtypes=[tf.float32], shapes=())
+gen_random_normal = tf.random.normal(shape=())
+queue = tf.queue.FIFOQueue(capacity=100, dtypes=[tf.float32], shapes=())
 enque = queue.enqueue(gen_random_normal)
 
 
@@ -103,12 +103,12 @@ time.sleep(0.01)
 print(sess.run(queue.size()))
 
 
-gen_random_normal = tf.random_normal(shape=())
-queue = tf.RandomShuffleQueue(capacity=100, dtypes=[tf.float32],
+gen_random_normal = tf.random.normal(shape=())
+queue = tf.queue.RandomShuffleQueue(capacity=100, dtypes=[tf.float32],
                               min_after_dequeue=1)
 enqueue_op = queue.enqueue(gen_random_normal)
 
-qr = tf.train.QueueRunner(queue, [enqueue_op] * 4)
+qr = tf.compat.v1.train.QueueRunner(queue, [enqueue_op] * 4)
 coord = tf.train.Coordinator()
 enqueue_threads = qr.create_threads(sess, coord=coord, start=True)
 coord.request_stop()

@@ -15,18 +15,18 @@ num_classes = 10
 batch_size = 128
 hidden_layer_size = 128
 
-_inputs = tf.placeholder(tf.float32,
+_inputs = tf.compat.v1.placeholder(tf.float32,
                          shape=[None, time_steps, element_size],
                          name='inputs')
-y = tf.placeholder(tf.float32, shape=[None, num_classes], name='inputs')
+y = tf.compat.v1.placeholder(tf.float32, shape=[None, num_classes], name='inputs')
 
 # TensorFlow built-in functions
-rnn_cell = tf.contrib.rnn.BasicRNNCell(hidden_layer_size)
-outputs, _ = tf.nn.dynamic_rnn(rnn_cell, _inputs, dtype=tf.float32)
+rnn_cell = tf.compat.v1.nn.rnn_cell.BasicRNNCell(hidden_layer_size)
+outputs, _ = tf.compat.v1.nn.dynamic_rnn(rnn_cell, _inputs, dtype=tf.float32)
 
-Wl = tf.Variable(tf.truncated_normal([hidden_layer_size, num_classes],
+Wl = tf.Variable(tf.random.truncated_normal([hidden_layer_size, num_classes],
                                      mean=0, stddev=.01))
-bl = tf.Variable(tf.truncated_normal([num_classes], mean=0, stddev=.01))
+bl = tf.Variable(tf.random.truncated_normal([num_classes], mean=0, stddev=.01))
 
 
 def get_linear_layer(vector):
@@ -36,15 +36,15 @@ def get_linear_layer(vector):
 last_rnn_output = outputs[:, -1, :]
 final_output = get_linear_layer(last_rnn_output)
 
-softmax = tf.nn.softmax_cross_entropy_with_logits(logits=final_output, labels=y)
-cross_entropy = tf.reduce_mean(softmax)
-train_step = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cross_entropy)
+softmax = tf.nn.softmax_cross_entropy_with_logits(logits=final_output, labels=tf.stop_gradient(y))
+cross_entropy = tf.reduce_mean(input_tensor=softmax)
+train_step = tf.compat.v1.train.RMSPropOptimizer(0.001, 0.9).minimize(cross_entropy)
 
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(final_output, 1))
-accuracy = (tf.reduce_mean(tf.cast(correct_prediction, tf.float32))) * 100
+correct_prediction = tf.equal(tf.argmax(input=y, axis=1), tf.argmax(input=final_output, axis=1))
+accuracy = (tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))) * 100
 
-sess = tf.InteractiveSession()
-sess.run(tf.global_variables_initializer())
+sess = tf.compat.v1.InteractiveSession()
+sess.run(tf.compat.v1.global_variables_initializer())
 
 test_data = mnist.test.images[:batch_size].reshape(
     (-1, time_steps, element_size))

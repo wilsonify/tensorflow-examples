@@ -86,33 +86,33 @@ def get_sentence_batch(batch_size, data_x,
     return x, y, seqlens
 
 
-_inputs = tf.placeholder(tf.int32, shape=[batch_size, times_steps])
-_labels = tf.placeholder(tf.float32, shape=[batch_size, num_classes])
+_inputs = tf.compat.v1.placeholder(tf.int32, shape=[batch_size, times_steps])
+_labels = tf.compat.v1.placeholder(tf.float32, shape=[batch_size, num_classes])
 # seqlens for dynamic calculation
-_seqlens = tf.placeholder(tf.int32, shape=[batch_size])
+_seqlens = tf.compat.v1.placeholder(tf.int32, shape=[batch_size])
 
-with tf.name_scope("embeddings"):
+with tf.compat.v1.name_scope("embeddings"):
     embeddings = tf.Variable(
-        tf.random_uniform([vocabulary_size,
+        tf.random.uniform([vocabulary_size,
                            embedding_dimension],
                           -1.0, 1.0), name='embedding')
-    embed = tf.nn.embedding_lookup(embeddings, _inputs)
+    embed = tf.nn.embedding_lookup(params=embeddings, ids=_inputs)
 
 
-with tf.variable_scope("lstm"):
+with tf.compat.v1.variable_scope("lstm"):
 
-    lstm_cell = tf.contrib.rnn.BasicLSTMCell(hidden_layer_size,
+    lstm_cell = tf.compat.v1.nn.rnn_cell.BasicLSTMCell(hidden_layer_size,
                                              forget_bias=1.0)
-    outputs, states = tf.nn.dynamic_rnn(lstm_cell, embed,
+    outputs, states = tf.compat.v1.nn.dynamic_rnn(lstm_cell, embed,
                                         sequence_length=_seqlens,
                                         dtype=tf.float32)
 
 weights = {
-    'linear_layer': tf.Variable(tf.truncated_normal([hidden_layer_size, num_classes],
+    'linear_layer': tf.Variable(tf.random.truncated_normal([hidden_layer_size, num_classes],
                                                     mean=0, stddev=.01))
 }
 biases = {
-    'linear_layer': tf.Variable(tf.truncated_normal([num_classes], mean=0, stddev=.01))
+    'linear_layer': tf.Variable(tf.random.truncated_normal([num_classes], mean=0, stddev=.01))
 }
 
 # extract the last relevant output and use in a linear layer
@@ -120,17 +120,17 @@ final_output = tf.matmul(states[1],
                          weights["linear_layer"]) + biases["linear_layer"]
 
 softmax = tf.nn.softmax_cross_entropy_with_logits(logits=final_output,
-                                                  labels=_labels)
-cross_entropy = tf.reduce_mean(softmax)
+                                                  labels=tf.stop_gradient(_labels))
+cross_entropy = tf.reduce_mean(input_tensor=softmax)
 
-train_step = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cross_entropy)
-correct_prediction = tf.equal(tf.argmax(_labels, 1),
-                              tf.argmax(final_output, 1))
-accuracy = (tf.reduce_mean(tf.cast(correct_prediction,
+train_step = tf.compat.v1.train.RMSPropOptimizer(0.001, 0.9).minimize(cross_entropy)
+correct_prediction = tf.equal(tf.argmax(input=_labels, axis=1),
+                              tf.argmax(input=final_output, axis=1))
+accuracy = (tf.reduce_mean(input_tensor=tf.cast(correct_prediction,
                                    tf.float32)))*100
 
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
+with tf.compat.v1.Session() as sess:
+    sess.run(tf.compat.v1.global_variables_initializer())
 
     for step in range(1000):
         x_batch, y_batch, seqlen_batch = get_sentence_batch(batch_size,
@@ -149,7 +149,7 @@ with tf.Session() as sess:
         x_test, y_test, seqlen_test = get_sentence_batch(batch_size,
                                                          test_x, test_y,
                                                          test_seqlens)
-        batch_pred, batch_acc = sess.run([tf.argmax(final_output, 1), accuracy],
+        batch_pred, batch_acc = sess.run([tf.argmax(input=final_output, axis=1), accuracy],
                                          feed_dict={_inputs: x_test,
                                                     _labels: y_test,
                                                     _seqlens: seqlen_test})

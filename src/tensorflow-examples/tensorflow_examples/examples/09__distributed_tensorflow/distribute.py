@@ -22,7 +22,7 @@ tf.app.flags.DEFINE_integer("task_index", 0, "Index of task")
 FLAGS = tf.app.flags.FLAGS
 
 
-server = tf.train.Server(cluster,
+server = tf.distribute.Server(cluster,
                          job_name=FLAGS.job_name,
                          task_index=FLAGS.task_index)
 
@@ -46,30 +46,30 @@ if FLAGS.job_name == "ps":
 
 elif FLAGS.job_name == "worker":
 
-    with tf.device(tf.train.replica_device_setter(
+    with tf.device(tf.compat.v1.train.replica_device_setter(
             worker_device="/job:worker/task:%d" % FLAGS.task_index,
             cluster=cluster)):
 
-        global_step = tf.get_variable('global_step', [],
-                                      initializer=tf.constant_initializer(0),
+        global_step = tf.compat.v1.get_variable('global_step', [],
+                                      initializer=tf.compat.v1.constant_initializer(0),
                                       trainable=False)
 
-        x = tf.placeholder(tf.float32, shape=[None, 784], name="x-input")
-        y_ = tf.placeholder(tf.float32, shape=[None, 10], name="y-input")
+        x = tf.compat.v1.placeholder(tf.float32, shape=[None, 784], name="x-input")
+        y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 10], name="y-input")
         y = net(x)
 
-        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y,
-                                                                               labels=y_))
+        cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(logits=y,
+                                                                               labels=tf.stop_gradient(y_)))
 
-        train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy,
+        train_step = tf.compat.v1.train.AdamOptimizer(1e-4).minimize(cross_entropy,
                                                            global_step=global_step)
 
-        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        correct_prediction = tf.equal(tf.argmax(input=y, axis=1), tf.argmax(input=y_, axis=1))
+        accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_prediction, tf.float32))
 
-        init_op = tf.global_variables_initializer()
+        init_op = tf.compat.v1.global_variables_initializer()
 
-    sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
+    sv = tf.compat.v1.train.Supervisor(is_chief=(FLAGS.task_index == 0),
                              logdir=LOG_DIR,
                              global_step=global_step,
                              init_op=init_op)
