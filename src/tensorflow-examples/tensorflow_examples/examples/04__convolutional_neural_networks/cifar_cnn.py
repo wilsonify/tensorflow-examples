@@ -111,7 +111,7 @@ def run_simple_net():
                        for i in range(10)])
         print("Accuracy: {:.4}%".format(acc * 100))
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
         for i in range(STEPS):

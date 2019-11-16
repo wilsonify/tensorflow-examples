@@ -34,7 +34,7 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
     for i in range(STEPS):

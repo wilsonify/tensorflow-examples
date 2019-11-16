@@ -104,7 +104,7 @@ learningRate = tf.train.exponential_decay(learning_rate=0.1,
 train_step = tf.train.GradientDescentOptimizer(learningRate).minimize(loss)
 merged = tf.summary.merge_all()
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     train_writer = tf.summary.FileWriter(LOG_DIR,
                                          graph=tf.get_default_graph())
     saver = tf.train.Saver()

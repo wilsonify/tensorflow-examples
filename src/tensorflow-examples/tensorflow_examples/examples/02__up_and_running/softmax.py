@@ -23,7 +23,7 @@ gd_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 correct_mask = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y_true, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_mask, tf.float32))
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
 
     # Train
     sess.run(tf.global_variables_initializer())

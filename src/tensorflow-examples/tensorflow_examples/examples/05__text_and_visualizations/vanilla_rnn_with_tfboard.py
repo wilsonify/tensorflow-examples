@@ -125,7 +125,7 @@ merged = tf.summary.merge_all()
 test_data = mnist.test.images[:batch_size].reshape((-1, time_steps, element_size))
 test_label = mnist.test.labels[:batch_size]
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     # Write summaries to LOG_DIR -- used by TensorBoard
     train_writer = tf.summary.FileWriter(LOG_DIR + '/train',
                                          graph=tf.get_default_graph())
