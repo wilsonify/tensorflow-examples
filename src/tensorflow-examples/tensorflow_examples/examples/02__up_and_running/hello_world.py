@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def main():
+def main_1():
     with tf.compat.v1.Session() as sess:
         h = tf.constant("Hello")
         w = tf.constant(" World!")
@@ -10,6 +10,11 @@ def main():
     return ans
 
 
+def main_2():
+    msg = tf.constant('TensorFlow 2.0 Hello World')
+    return tf.print(msg)
+
+
 if __name__ == "__main__":
-    ans = main()
-    print(ans)
+    print(main_1())
+    print(main_2())
