@@ -6,8 +6,9 @@ Created on Tue Dec 20 17:34:43 2016
 """
 from __future__ import print_function
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+#from tensorflow_examples.tutorials.mnist import input_data
+from keras.datasets.mnist import load_data
+mnist = load_data(path="/tmp/data/")
 
 element_size = 28
 time_steps = 28

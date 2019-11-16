@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow_examples.tutorials.mnist import input_data
 
 
 DATA_DIR = '/tmp/data'

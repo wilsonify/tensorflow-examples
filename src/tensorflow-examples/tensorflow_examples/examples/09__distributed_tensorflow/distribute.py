@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib import slim
-from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow_examples.tutorials.mnist import input_data
 
 
 BATCH_SIZE = 50

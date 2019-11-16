@@ -1,4 +1,4 @@
-from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow_examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
 

@@ -3,7 +3,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from layers import conv_layer, max_pool_2x2, full_layer
+from tensorflow import keras
+from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
+
 
 DATA_PATH = "path/to/CIFAR10"
 BATCH_SIZE = 50
