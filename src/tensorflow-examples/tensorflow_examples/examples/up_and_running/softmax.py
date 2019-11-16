@@ -1,43 +1,58 @@
 import logging
+from logging.config import dictConfig
 
+import numpy as np
 import tensorflow as tf
-from keras.datasets.mnist import load_data
+from tensorflow_examples import config
 
+DATA_URL = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz'
 DATA_DIR = '/tmp/data'
-NUM_STEPS = 1000
-MINIBATCH_SIZE = 100
+NUM_STEPS = 10
+BATCH_SIZE = 64
+SHUFFLE_BUFFER_SIZE = 100
+IMAGE_SHAPE = (28, 28)
+
+
+def load_data():
+    path = tf.keras.utils.get_file(
+        fname='mnist.npz',
+        origin=DATA_URL,
+        cache_dir=DATA_DIR
+    )
+    with np.load(path) as data:
+        train_examples = data['x_train']
+        train_labels = data['y_train']
+        test_examples = data['x_test']
+        test_labels = data['y_test']
+
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_examples, test_labels))
+    logging.debug("%r", "type(train_dataset) = {}".format(type(train_dataset)))
+    logging.debug("%r", "type(test_dataset) = {}".format(type(test_dataset)))
+
+    train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_SIZE)
+    test_dataset = test_dataset.batch(BATCH_SIZE)
+    return train_dataset, test_dataset
 
 
 def main():
-    data = load_data(path=DATA_DIR)
-    logging.debug("%r", "type(data) = {}".format(type(data)))
-    with tf.compat.v1.Session() as sess:
-        x = tf.compat.v1.placeholder(tf.float32, [None, 784])
-        W = tf.Variable(tf.zeros([784, 10]))
+    train_dataset, test_dataset = load_data()
 
-        y_true = tf.compat.v1.placeholder(tf.float32, [None, 10])
-        y_pred = tf.matmul(x, W)
+    model = tf.keras.Sequential([
+        tf.keras.layers.Flatten(input_shape=IMAGE_SHAPE),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(10, activation='softmax')
+    ])
 
-        cross_entropy = tf.reduce_mean(input_tensor=tf.nn.softmax_cross_entropy_with_logits(
-            logits=y_pred, labels=tf.stop_gradient(y_true)))
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                  metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
 
-        gd_step = tf.compat.v1.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+    model.fit(train_dataset, epochs=NUM_STEPS)
 
-        correct_mask = tf.equal(tf.argmax(input=y_pred, axis=1), tf.argmax(input=y_true, axis=1))
-        accuracy = tf.reduce_mean(input_tensor=tf.cast(correct_mask, tf.float32))
-
-        # Train
-        sess.run(tf.compat.v1.global_variables_initializer())
-        for _ in range(NUM_STEPS):
-            batch_xs, batch_ys = data.train.next_batch(MINIBATCH_SIZE)
-            sess.run(gd_step, feed_dict={x: batch_xs, y_true: batch_ys})
-
-        # Test
-        ans = sess.run(accuracy, feed_dict={x: data.test.images, y_true: data.test.labels})
-
-    print("Accuracy: {:.4}%".format(ans * 100))
+    model.evaluate(test_dataset)
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
+    dictConfig(config.LOGGING_CONFIG_DICT)
     main()
