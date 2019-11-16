@@ -4,50 +4,50 @@ Converted 17 files
 Detected 12 issues that require attention
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-File: /home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py
+File: tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py
 --------------------------------------------------------------------------------
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py:99:12: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py:99:12: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
 --------------------------------------------------------------------------------
-File: /home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py
+File: tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py
 --------------------------------------------------------------------------------
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py:81:4: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py:81:4: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
 --------------------------------------------------------------------------------
-File: /home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py
+File: tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py
 --------------------------------------------------------------------------------
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:83:12: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:93:2: WARNING: tf.nn.nce_loss requires manual check. `partition_strategy` has been removed from tf.nn.nce_loss.  The 'div' strategy will be used by default.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:134:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:83:12: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:93:2: WARNING: tf.nn.nce_loss requires manual check. `partition_strategy` has been removed from tf.nn.nce_loss.  The 'div' strategy will be used by default.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py:134:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
 --------------------------------------------------------------------------------
-File: /home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py
+File: tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py
 --------------------------------------------------------------------------------
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:136:16: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:143:16: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:148:22: WARNING: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib.rnn. (Manual edit required) tf.contrib.rnn.* has been deprecated, and widely used cells/functions will be moved to tensorflow/addons repository. Please check it there and file Github issues if necessary.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:148:22: ERROR: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib. tf.contrib.rnn.DropoutWrapper cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:152:22: WARNING: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib.rnn. (Manual edit required) tf.contrib.rnn.* has been deprecated, and widely used cells/functions will be moved to tensorflow/addons repository. Please check it there and file Github issues if necessary.
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:152:22: ERROR: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib. tf.contrib.rnn.DropoutWrapper cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:136:16: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:143:16: WARNING: tf.nn.embedding_lookup requires manual check. `partition_strategy` has been removed from tf.nn.embedding_lookup.  The 'div' strategy will be used by default.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:148:22: WARNING: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib.rnn. (Manual edit required) tf.contrib.rnn.* has been deprecated, and widely used cells/functions will be moved to tensorflow/addons repository. Please check it there and file Github issues if necessary.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:148:22: ERROR: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib. tf.contrib.rnn.DropoutWrapper cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:152:22: WARNING: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib.rnn. (Manual edit required) tf.contrib.rnn.* has been deprecated, and widely used cells/functions will be moved to tensorflow/addons repository. Please check it there and file Github issues if necessary.
+tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py:152:22: ERROR: Using member tf.contrib.rnn.DropoutWrapper in deprecated module tf.contrib. tf.contrib.rnn.DropoutWrapper cannot be converted automatically. tf.contrib will not be distributed with TensorFlow 2.0, please consider an alternative in non-contrib TensorFlow, a community-maintained repository such as tensorflow/addons, or fork the required code.
 --------------------------------------------------------------------------------
-File: /home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute.py
+File: tensorflow_examples/examples/09__distributed_tensorflow/distribute.py
 --------------------------------------------------------------------------------
-/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute.py:53:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+tensorflow_examples/examples/09__distributed_tensorflow/distribute.py:53:22: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
 ================================================================================
 Detailed log follows:
 
 ================================================================================
 ================================================================================
-Input tree: '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples'
+Input tree: 'tensorflow_examples/examples'
 ================================================================================
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/02__up_and_running/hello_world.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/02__up_and_running/hello_world.py'
+Processing file 'tensorflow_examples/examples/02__up_and_running/hello_world.py'
+ outputting to 'tensorflow_examples/examples/02__up_and_running/hello_world.py'
 --------------------------------------------------------------------------------
 
 7:5: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/02__up_and_running/softmax.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/02__up_and_running/softmax.py'
+Processing file 'tensorflow_examples/examples/02__up_and_running/softmax.py'
+ outputting to 'tensorflow_examples/examples/02__up_and_running/softmax.py'
 --------------------------------------------------------------------------------
 
 12:4: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -64,8 +64,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/vanilla_rnn_with_tfboard.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/vanilla_rnn_with_tfboard.py'
+Processing file 'tensorflow_examples/examples/05__text_and_visualizations/vanilla_rnn_with_tfboard.py'
+ outputting to 'tensorflow_examples/examples/05__text_and_visualizations/vanilla_rnn_with_tfboard.py'
 --------------------------------------------------------------------------------
 
 25:10: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -152,8 +152,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py'
+Processing file 'tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py'
+ outputting to 'tensorflow_examples/examples/05__text_and_visualizations/LSTM_supervised_embeddings.py'
 --------------------------------------------------------------------------------
 
 89:10: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -183,8 +183,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/BasicRNNCell.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/BasicRNNCell.py'
+Processing file 'tensorflow_examples/examples/05__text_and_visualizations/BasicRNNCell.py'
+ outputting to 'tensorflow_examples/examples/05__text_and_visualizations/BasicRNNCell.py'
 --------------------------------------------------------------------------------
 
 18:10: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -205,16 +205,16 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/scan_example.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/05__text_and_visualizations/scan_example.py'
+Processing file 'tensorflow_examples/examples/05__text_and_visualizations/scan_example.py'
+ outputting to 'tensorflow_examples/examples/05__text_and_visualizations/scan_example.py'
 --------------------------------------------------------------------------------
 
 14:7: INFO: Renamed 'tf.InteractiveSession' to 'tf.compat.v1.InteractiveSession'
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py'
+Processing file 'tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py'
+ outputting to 'tensorflow_examples/examples/08__queues_threads/tfrecords_end_to_end.py'
 --------------------------------------------------------------------------------
 
 29:13: INFO: Renamed 'tf.python_io.TFRecordWriter' to 'tf.io.TFRecordWriter'
@@ -236,8 +236,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_read_write.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/tfrecords_read_write.py'
+Processing file 'tensorflow_examples/examples/08__queues_threads/tfrecords_read_write.py'
+ outputting to 'tensorflow_examples/examples/08__queues_threads/tfrecords_read_write.py'
 --------------------------------------------------------------------------------
 
 29:13: INFO: Renamed 'tf.python_io.TFRecordWriter' to 'tf.io.TFRecordWriter'
@@ -245,8 +245,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/queue_basic.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/08__queues_threads/queue_basic.py'
+Processing file 'tensorflow_examples/examples/08__queues_threads/queue_basic.py'
+ outputting to 'tensorflow_examples/examples/08__queues_threads/queue_basic.py'
 --------------------------------------------------------------------------------
 
 14:7: INFO: Renamed 'tf.InteractiveSession' to 'tf.compat.v1.InteractiveSession'
@@ -262,8 +262,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/cifar_cnn.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/cifar_cnn.py'
+Processing file 'tensorflow_examples/examples/04__convolutional_neural_networks/cifar_cnn.py'
+ outputting to 'tensorflow_examples/examples/04__convolutional_neural_networks/cifar_cnn.py'
 --------------------------------------------------------------------------------
 
 80:8: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -306,8 +306,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/layers.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/layers.py'
+Processing file 'tensorflow_examples/examples/04__convolutional_neural_networks/layers.py'
+ outputting to 'tensorflow_examples/examples/04__convolutional_neural_networks/layers.py'
 --------------------------------------------------------------------------------
 
 5:14: INFO: Renamed 'tf.truncated_normal' to 'tf.random.truncated_normal'
@@ -319,16 +319,16 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/__init__.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/__init__.py'
+Processing file 'tensorflow_examples/examples/04__convolutional_neural_networks/__init__.py'
+ outputting to 'tensorflow_examples/examples/04__convolutional_neural_networks/__init__.py'
 --------------------------------------------------------------------------------
 
 
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/mnist_cnn.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/04__convolutional_neural_networks/mnist_cnn.py'
+Processing file 'tensorflow_examples/examples/04__convolutional_neural_networks/mnist_cnn.py'
+ outputting to 'tensorflow_examples/examples/04__convolutional_neural_networks/mnist_cnn.py'
 --------------------------------------------------------------------------------
 
 14:4: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -348,8 +348,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py'
+Processing file 'tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py'
+ outputting to 'tensorflow_examples/examples/06__word_embeddings_and_rnns/word2vec.py'
 --------------------------------------------------------------------------------
 
 74:15: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -383,8 +383,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py'
+Processing file 'tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py'
+ outputting to 'tensorflow_examples/examples/06__word_embeddings_and_rnns/GRU_pretrained_GloVe.py'
 --------------------------------------------------------------------------------
 
 124:10: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
@@ -425,8 +425,8 @@ Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/te
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute.py'
+Processing file 'tensorflow_examples/examples/09__distributed_tensorflow/distribute.py'
+ outputting to 'tensorflow_examples/examples/09__distributed_tensorflow/distribute.py'
 --------------------------------------------------------------------------------
 
 25:9: INFO: Renamed 'tf.train.Server' to 'tf.distribute.Server'
@@ -450,8 +450,8 @@ The calls have been converted to compat.v1 for safety (even though they may alre
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-Processing file '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute-run.py'
- outputting to '/home/thom/repos/tensorflow-examples/src/tensorflow-examples/tensorflow_examples/examples/09__distributed_tensorflow/distribute-run.py'
+Processing file 'tensorflow_examples/examples/09__distributed_tensorflow/distribute-run.py'
+ outputting to 'tensorflow_examples/examples/09__distributed_tensorflow/distribute-run.py'
 --------------------------------------------------------------------------------
 
 
