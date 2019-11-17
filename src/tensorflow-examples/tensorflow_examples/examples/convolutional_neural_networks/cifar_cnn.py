@@ -1,12 +1,16 @@
 import os
 import pickle
+import tarfile
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
-DATA_PATH = "path/to/CIFAR10"
+HOME_DIR = os.path.expanduser("~")
+ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz")
+DATA_DIR = os.path.join(HOME_DIR, "Downloads", "cifar-10-python")
+BATCH_DIR = os.path.join(DATA_DIR, "cifar-10-batches-py")
 BATCH_SIZE = 50
 STEPS = 500000
 
@@ -18,8 +22,19 @@ def one_hot(vec, vals=10):
     return out
 
 
+def unzip(file_name, destination_dir=DATA_DIR):
+    if file_name.endswith(".tar.gz"):
+        compression_type = 'gz'
+    elif file_name.endswith(".tar"):
+        compression_type = ''
+
+    open_args = [file_name, "r:{}".format(compression_type)]
+    with tarfile.open(*open_args) as tar:
+        tar.extractall(path=destination_dir)
+
+
 def unpickle(file):
-    with open(os.path.join(DATA_PATH, file), 'rb') as fo:
+    with open(os.path.join(BATCH_DIR, file), 'rb') as fo:
         u = pickle._Unpickler(fo)
         u.encoding = 'latin1'
         dict = u.load()
@@ -78,6 +93,7 @@ class CifarDataManager(object):
 
 def run_simple_net():
     cifar = CifarDataManager()
+    tf.compat.v1.disable_eager_execution()
 
     x = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
     y_ = tf.compat.v1.placeholder(tf.float32, shape=[None, 10])
