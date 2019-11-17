@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
 HOME_DIR = os.path.expanduser("~")
-ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz")
+ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz") #manually download and extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
 DATA_DIR = os.path.join(HOME_DIR, "Downloads", "cifar-10-python")
 BATCH_DIR = os.path.join(DATA_DIR, "cifar-10-batches-py")
 BATCH_SIZE = 50
