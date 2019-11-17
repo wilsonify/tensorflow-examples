@@ -1,3 +1,6 @@
+import datetime
+import logging
+
 import tensorflow as tf
 from tensorflow.keras import Model, layers
 import numpy as np
@@ -14,61 +17,54 @@ num_input = 28
 timesteps = 28
 num_units = 32
 
-
-class LSTM(Model):
-    def __init__(self):
-        super(LSTM, self).__init__()
-        self.lstm_layer = layers.LSTM(units=num_units)
-        self.out = layers.Dense(num_classes)
-
-    def call(self, x, is_training=False):
-        x = self.lstm_layer(x)
-        x = self.out(x)
-        if not is_training:
-            x = tf.nn.softmax(x)
-        return x
+BATCH_SIZE = 128
+SHUFFLE_BUFFER_SIZE = 100
+IMAGE_SHAPE = (28, 28)
+INPUT_SHAPE = (28, 28, 1)
+NUM_CLASSES = 10
+EPOCHS = 5
 
 
-def cross_entropy_loss(x, y):
-    y = tf.cast(y, tf.int64)
-    loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=x)
-    return tf.reduce_mean(loss)
+def load_data():
+    """
+    get and split data
+    :return: tf.data.Dataset suitable for keras flows
+    """
+    mnist = tf.keras.datasets.mnist
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train, x_test = x_train / 255.0, x_test / 255.0
+    sample, sample_label = x_train[0], y_train[0]
 
+    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+    test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+    train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_SIZE)
+    test_dataset = test_dataset.batch(BATCH_SIZE)
 
-def accuracy(y_pred, y_true):
-    correct_prediction = tf.equal(tf.argmax(y_pred, 1), tf.cast(y_true, tf.int64))
-    return tf.reduce_mean(tf.cast(correct_prediction, tf.float32), axis=-1)
-
-
-def run_optimization(x, y, lstm_net, optimizer):
-    with tf.GradientTape() as g:
-        pred = lstm_net(x, is_training=True)
-        loss = cross_entropy_loss(pred, y)
-    trainable_variables = lstm_net.trainable_variables
-    gradients = g.gradient(loss, trainable_variables)
-    optimizer.apply_gradients(zip(gradients, trainable_variables))
+    return train_dataset, test_dataset
 
 
 def main():
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    x_train, x_test = np.array(x_train, np.float32), np.array(x_test, np.float32)
-    x_train, x_test = x_train.reshape([-1, 28, 28]), x_test.reshape(
-        [-1, num_features])  # Flatten images to 1-D vector of 784 features (28*28).
-    x_train, x_test = x_train / 255., x_test / 255.  # Normalize images value from [0, 255] to [0, 1].
+    train_dataset, test_dataset = load_data()
 
-    train_data = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    train_data = train_data.repeat().shuffle(5000).batch(batch_size).prefetch(1)
+    model = tf.keras.Sequential()
+    model.add(layers.Embedding(input_dim=1000, output_dim=64))
+    model.add(layers.GRU(256, return_sequences=True))
+    model.add(layers.SimpleRNN(128))
+    model.add(layers.Dense(10, activation='softmax'))
 
-    lstm_net = LSTM()
-    optimizer = tf.optimizers.Adam(learning_rate)
+    model.compile(loss=tf.keras.losses.categorical_crossentropy,
+                  optimizer=tf.keras.optimizers.Adadelta(),
+                  metrics=['accuracy'])
 
-    for step, (batch_x, batch_y) in enumerate(train_data.take(training_steps), 1):
-        run_optimization(batch_x, batch_y, lstm_net=lstm_net, optimizer=optimizer)
-        if step % display_step == 0:
-            pred = lstm_net(batch_x, is_training=True)
-            loss = cross_entropy_loss(pred, batch_y)
-            acc = accuracy(pred, batch_y)
-            print("step: %i, loss: %f, accuracy: %f" % (step, loss, acc))
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
+    model.fit(
+        train_dataset,
+        epochs=5,
+        validation_data=test_dataset,
+        callbacks=[tensorboard_callback]
+    )
 
 
 if __name__ == "__main__":
