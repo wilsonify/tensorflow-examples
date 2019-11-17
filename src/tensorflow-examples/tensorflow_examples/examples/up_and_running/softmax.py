@@ -1,3 +1,4 @@
+import datetime
 import logging
 from logging.config import dictConfig
 
@@ -12,51 +13,38 @@ IMAGE_SHAPE = (28, 28)
 
 
 def load_data():
-    DATA_URL = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz'
-    DATA_DIR = '/tmp/data'
-    path = tf.keras.utils.get_file(
-        fname='mnist.npz',
-        origin=DATA_URL,
-        cache_dir=DATA_DIR
-    )
-    with np.load(path) as data:
-        train_examples = data['x_train']
-        train_labels = data['y_train']
-        test_examples = data['x_test']
-        test_labels = data['y_test']
+    mnist = tf.keras.datasets.mnist
 
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_examples, test_labels))
-    logging.debug("%r", "type(train_dataset) = {}".format(type(train_dataset)))
-    logging.debug("%r", "type(test_dataset) = {}".format(type(test_dataset)))
-
-    train_dataset = train_dataset.shuffle(SHUFFLE_BUFFER_SIZE).batch(BATCH_SIZE)
-    test_dataset = test_dataset.batch(BATCH_SIZE)
-    return train_dataset, test_dataset
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train, x_test = x_train / 255.0, x_test / 255.0
+    return (x_train, y_train), (x_test, y_test)
 
 
-def construct_model():
-    return tf.keras.Sequential([
-        tf.keras.layers.Flatten(input_shape=IMAGE_SHAPE),
-        tf.keras.layers.Dense(128, activation='relu'),
+def create_model():
+    return tf.keras.models.Sequential([
+        tf.keras.layers.Flatten(input_shape=(28, 28)),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dropout(0.2),
         tf.keras.layers.Dense(10, activation='softmax')
     ])
 
 
 def main():
-    train_dataset, test_dataset = load_data()
+    (x_train, y_train), (x_test, y_test) = load_data()
 
-    model = construct_model()
-    compilation_kwargs = {
-        'optimizer': tf.keras.optimizers.RMSprop(),
-        'loss': tf.keras.losses.SparseCategoricalCrossentropy(),
-        'metrics': [tf.keras.metrics.SparseCategoricalAccuracy()]
-    }
-    model.compile(**compilation_kwargs)
+    model = create_model()
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
 
-    model.fit(train_dataset, epochs=NUM_STEPS)
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
-    model.evaluate(test_dataset)
+    model.fit(x=x_train,
+              y=y_train,
+              epochs=5,
+              validation_data=(x_test, y_test),
+              callbacks=[tensorboard_callback])
 
 
 if __name__ == "__main__":
