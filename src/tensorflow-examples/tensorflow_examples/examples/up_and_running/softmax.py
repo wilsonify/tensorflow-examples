@@ -5,8 +5,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_examples import config
 
-DATA_URL = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz'
-DATA_DIR = '/tmp/data'
 NUM_STEPS = 10
 BATCH_SIZE = 64
 SHUFFLE_BUFFER_SIZE = 100
@@ -14,6 +12,8 @@ IMAGE_SHAPE = (28, 28)
 
 
 def load_data():
+    DATA_URL = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz'
+    DATA_DIR = '/tmp/data'
     path = tf.keras.utils.get_file(
         fname='mnist.npz',
         origin=DATA_URL,
