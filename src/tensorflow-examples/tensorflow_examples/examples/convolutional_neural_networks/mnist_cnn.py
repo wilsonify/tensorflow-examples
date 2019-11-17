@@ -32,6 +32,7 @@ def load_data():
 
     with np.load(path) as data:
         train_examples = data["x_train"]
+        train_examples = train_examples.reshape(-1, 28, 28, 1)
         train_labels = tf.keras.utils.to_categorical(data["y_train"], NUM_CLASSES)
         test_examples = data["x_test"]
         test_labels = tf.keras.utils.to_categorical(data["y_test"], NUM_CLASSES)
@@ -72,7 +73,6 @@ def main():
                   metrics=['accuracy'])
 
     model.fit(train_dataset,
-              batch_size=BATCH_SIZE,
               epochs=EPOCHS,
               verbose=1,
               )
