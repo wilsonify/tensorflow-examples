@@ -45,14 +45,7 @@ def load_data():
     return train_dataset, test_dataset
 
 
-def main():
-    """
-    main function
-    load, train, evaluate
-    :return:
-    """
-    # input image dimensions
-    train_dataset, test_dataset = load_data()
+def construct_model():
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Conv2D(32, kernel_size=(3, 3),
                                      activation='relu',
@@ -64,15 +57,33 @@ def main():
     model.add(tf.keras.layers.Dense(128, activation='relu'))
     # model.add(tf.keras.layers.Dropout(0.5))
     model.add(tf.keras.layers.Dense(NUM_CLASSES, activation='softmax'))
+    return model
 
-    model.compile(loss=tf.keras.losses.categorical_crossentropy,
-                  optimizer=tf.keras.optimizers.Adadelta(),
-                  metrics=['accuracy'])
 
-    model.fit(train_dataset,
-              epochs=EPOCHS,
-              verbose=2,
-              )
+def main():
+    """
+    main function
+    load, train, evaluate
+    :return:
+    """
+    # input image dimensions
+    train_dataset, test_dataset = load_data()
+
+    model = construct_model()
+
+    compile_kwargs = {
+        'loss': tf.keras.losses.categorical_crossentropy,
+        'optimizer': tf.keras.optimizers.Adadelta(),
+        'metrics': ['accuracy']
+    }
+
+    model.compile(**compile_kwargs)
+
+    model.fit(
+        train_dataset,
+        epochs=EPOCHS,
+        verbose=2,
+    )
     score = model.evaluate(test_dataset, verbose=2)
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
