@@ -35,18 +35,24 @@ def load_data():
     return train_dataset, test_dataset
 
 
-def main():
-    train_dataset, test_dataset = load_data()
-
-    model = tf.keras.Sequential([
+def construct_model():
+    return tf.keras.Sequential([
         tf.keras.layers.Flatten(input_shape=IMAGE_SHAPE),
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(10, activation='softmax')
     ])
 
-    model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-                  metrics=[tf.keras.metrics.SparseCategoricalAccuracy()])
+
+def main():
+    train_dataset, test_dataset = load_data()
+
+    model = construct_model()
+    compilation_kwargs = {
+        'optimizer': tf.keras.optimizers.RMSprop(),
+        'loss': tf.keras.losses.SparseCategoricalCrossentropy(),
+        'metrics': [tf.keras.metrics.SparseCategoricalAccuracy()]
+    }
+    model.compile(**compilation_kwargs)
 
     model.fit(train_dataset, epochs=NUM_STEPS)
 
