@@ -40,25 +40,39 @@ EPOCHS = 10
 
 
 def max_length(tensor):
+    """
+    find longest length in tensor
+    :param tensor:
+    :return:
+    """
     logging.debug("max_length")
     return max(len(t) for t in tensor)
 
 
 def tokenize(lang):
+    """
+    tokens
+    :param lang:
+    :return:
+    """
     logging.debug("tokenize")
-    lang_tokenizer = tf.keras.preprocessing.text.Tokenizer(
-        filters='')
+    lang_tokenizer = tf.keras.preprocessing.text.Tokenizer(filters="")
     lang_tokenizer.fit_on_texts(lang)
 
     tensor = lang_tokenizer.texts_to_sequences(lang)
 
-    tensor = tf.keras.preprocessing.sequence.pad_sequences(tensor,
-                                                           padding='post')
+    tensor = tf.keras.preprocessing.sequence.pad_sequences(tensor, padding="post")
 
     return tensor, lang_tokenizer
 
 
 def load_dataset(path, num_examples=None):
+    """
+    tokenize and clean data in file
+    :param path:
+    :param num_examples:
+    :return:
+    """
     logging.info("load_dataset")
     logging.info("creating cleaned input, output pairs")
     targ_lang, inp_lang = create_dataset(path, num_examples)
@@ -76,88 +90,126 @@ def create_dataset(path, num_examples):
     3. Return word pairs in the format: [ENGLISH, SPANISH]
     """
     logging.info("create_dataset")
-    lines = io.open(path, encoding='UTF-8').read().strip().split('\n')
+    lines = io.open(path, encoding="UTF-8").read().strip().split("\n")
 
-    word_pairs = [[preprocess_sentence(w) for w in l.split('\t')] for l in lines[:num_examples]]
+    word_pairs = [
+        [preprocess_sentence(w) for w in l.split("\t")] for l in lines[:num_examples]
+    ]
 
     return zip(*word_pairs)
 
 
-def unicode_to_ascii(s):
+def unicode_to_ascii(s_input):
     """
     Converts the unicode file to ascii
-    :param s:
+    :param s_input:
     :return:
     """
-    logging.info("unicode_to_ascii")
-    return ''.join(c for c in unicodedata.normalize('NFD', s)
-                   if unicodedata.category(c) != 'Mn')
+    return "".join(
+        c for c in unicodedata.normalize("NFD", s_input) if unicodedata.category(c) != "Mn"
+    )
 
 
-def preprocess_sentence(w):
-    logging.info("preprocess_sentence")
-    w = unicode_to_ascii(w.lower().strip())
+def preprocess_sentence(w_input):
+    """
+    preprocess_sentence
+    :param w_input:
+    :return:
+    """
+    w_input = unicode_to_ascii(w_input.lower().strip())
 
     # creating a space between a word and the punctuation following it
     # eg: "he is a boy." => "he is a boy ."
     # Reference:
     # https://stackoverflow.com/questions/3645931/python-padding-punctuation-with-white-spaces-keeping-punctuation
-    w = re.sub(r"([?.!,¿])", r" \1 ", w)
-    w = re.sub(r"""[" ]+""", " ", w)
+    w_input = re.sub(r"([?.!,¿])", r" \1 ", w_input)
+    w_input = re.sub(r"""[" ]+""", " ", w_input)
 
     # replacing everything with space except (a-z, A-Z, ".", "?", "!", ",")
-    w = re.sub(r"[^a-zA-Z?.!,¿]+", " ", w)
+    w_input = re.sub(r"[^a-zA-Z?.!,¿]+", " ", w_input)
 
-    w = w.rstrip().strip()
+    w_input = w_input.rstrip().strip()
 
     # adding a start and an end token to the sentence
     # so that the model know when to start and stop predicting.
-    w = '<start> ' + w + ' <end>'
-    return w
+    w_input = "<start> " + w_input + " <end>"
+    return w_input
 
 
 def convert(lang, tensor):
+    """
+    convert
+    :param lang:
+    :param tensor:
+    :return:
+    """
     logging.info("convert")
     logging.debug("%r", "lang = {}".format(lang))
     logging.debug("%r", "tensor = {}".format(tensor))
-    for t in tensor:
-        if t != 0:
-            print("%d ----> %s" % (t, lang.index_word[t]))
+    for t_ind in tensor:
+        if t_ind != 0:
+            print("%d ----> %s" % (t_ind, lang.index_word[t_ind]))
 
 
 class Encoder(tf.keras.Model):
+    """
+    encode arbitrary embeddings using RNN
+    """
+
     def __init__(self, vocab_size, embedding_dim, enc_units, batch_sz):
         logging.info("initialize Encoder")
         super(Encoder, self).__init__()
         self.batch_sz = batch_sz
         self.enc_units = enc_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.gru = tf.keras.layers.GRU(self.enc_units,
-                                       return_sequences=True,
-                                       return_state=True,
-                                       recurrent_initializer='glorot_uniform')
+        self.gru = tf.keras.layers.GRU(
+            self.enc_units,
+            return_sequences=True,
+            return_state=True,
+            recurrent_initializer="glorot_uniform",
+        )
 
-    def call(self, x, hidden):
-        logging.debug("call")
-        x = self.embedding(x)
-        output, state = self.gru(x, initial_state=hidden)
+    def call(self, x_input, hidden):
+        """
+        primary call method
+        :param x_input:
+        :param hidden:
+        :return:
+        """
+        logging.debug("Encoder.call")
+        x_input = self.embedding(x_input)
+        output, state = self.gru(x_input, initial_state=hidden)
         return output, state
 
     def initialize_hidden_state(self):
+        """
+        initialize_hidden_state
+        :return:
+        """
         logging.debug("initialize_hidden_state")
         return tf.zeros((self.batch_sz, self.enc_units))
 
 
 class BahdanauAttention(tf.keras.layers.Layer):
+    """
+    The Attention object
+    """
+
     def __init__(self, units):
         logging.info("initialize BahdanauAttention")
         super(BahdanauAttention, self).__init__()
-        self.W1 = tf.keras.layers.Dense(units)
-        self.W2 = tf.keras.layers.Dense(units)
-        self.V = tf.keras.layers.Dense(1)
+        self.w1_layer = tf.keras.layers.Dense(units)
+        self.w2_layer = tf.keras.layers.Dense(units)
+        self.v0_layer = tf.keras.layers.Dense(1)
 
     def call(self, query, values):
-        logging.debug("call")
+        """
+        primary call method
+        :param query:
+        :param values:
+        :return:
+        """
+        logging.debug("BahdanauAttention.call")
         # hidden shape == (batch_size, hidden size)
         # hidden_with_time_axis shape == (batch_size, 1, hidden size)
         # we are doing this to perform addition to calculate the score
@@ -166,8 +218,7 @@ class BahdanauAttention(tf.keras.layers.Layer):
         # score shape == (batch_size, max_length, 1)
         # we get 1 at the last axis because we are applying score to self.V
         # the shape of the tensor before applying self.V is (batch_size, max_length, units)
-        score = self.V(tf.nn.tanh(
-            self.W1(values) + self.W2(hidden_with_time_axis)))
+        score = self.v0_layer(tf.nn.tanh(self.w1_layer(values) + self.w2_layer(hidden_with_time_axis)))
 
         # attention_weights shape == (batch_size, max_length, 1)
         attention_weights = tf.nn.softmax(score, axis=1)
@@ -180,45 +231,65 @@ class BahdanauAttention(tf.keras.layers.Layer):
 
 
 class Decoder(tf.keras.Model):
+    """
+    decode embeddings with RNN
+    """
+
     def __init__(self, vocab_size, embedding_dim, dec_units, batch_sz):
         logging.info("Decoder")
         super(Decoder, self).__init__()
         self.batch_sz = batch_sz
         self.dec_units = dec_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.gru = tf.keras.layers.GRU(self.dec_units,
-                                       return_sequences=True,
-                                       return_state=True,
-                                       recurrent_initializer='glorot_uniform')
-        self.fc = tf.keras.layers.Dense(vocab_size)
+        self.gru = tf.keras.layers.GRU(
+            self.dec_units,
+            return_sequences=True,
+            return_state=True,
+            recurrent_initializer="glorot_uniform",
+        )
+        self.fully_connected = tf.keras.layers.Dense(vocab_size)
 
         # used for attention
         self.attention = BahdanauAttention(self.dec_units)
 
-    def call(self, x, hidden, enc_output):
+    def call(self, x_input, hidden, enc_output):
+        """
+        primary call method
+        :param x_input:
+        :param hidden:
+        :param enc_output:
+        :return:
+        """
         logging.debug("call")
         # enc_output shape == (batch_size, max_length, hidden_size)
         context_vector, attention_weights = self.attention.call(hidden, enc_output)
 
         # x shape after passing through embedding == (batch_size, 1, embedding_dim)
-        x = self.embedding(x)
+        x_input = self.embedding(x_input)
 
         # x shape after concatenation == (batch_size, 1, embedding_dim + hidden_size)
-        x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
+        x_input = tf.concat([tf.expand_dims(context_vector, 1), x_input], axis=-1)
 
         # passing the concatenated vector to the GRU
-        output, state = self.gru(x)
+        output, state = self.gru(x_input)
 
         # output shape == (batch_size * 1, hidden_size)
         output = tf.reshape(output, (-1, output.shape[2]))
 
         # output shape == (batch_size, vocab)
-        x = self.fc(output)
+        x_input = self.fully_connected(output)
 
-        return x, state, attention_weights
+        return x_input, state, attention_weights
 
 
 def loss_function(real, pred, loss_object):
+    """
+    measure loss object in a logically consistent way
+    :param real:
+    :param pred:
+    :param loss_object:
+    :return:
+    """
     logging.info("loss_function")
     mask = tf.math.logical_not(tf.math.equal(real, 0))
     loss_ = loss_object(real, pred)
@@ -230,7 +301,21 @@ def loss_function(real, pred, loss_object):
 
 
 @tf.function
-def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder, loss_object):
+def train_step(
+        inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder, loss_object
+):
+    """
+    tensorflow 2.0 function for eager training on dataset
+    :param inp:
+    :param targ:
+    :param targ_lang:
+    :param encoder:
+    :param enc_hidden:
+    :param optimizer:
+    :param decoder:
+    :param loss_object:
+    :return:
+    """
     logging.debug("train_step")
     loss = 0
 
@@ -239,19 +324,19 @@ def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder, lo
 
         dec_hidden = enc_hidden
 
-        dec_input = tf.expand_dims([targ_lang.word_index['<start>']] * BATCH_SIZE, 1)
+        dec_input = tf.expand_dims([targ_lang.word_index["<start>"]] * BATCH_SIZE, 1)
 
         # Teacher forcing - feeding the target as the next input
-        for t in range(1, targ.shape[1]):
+        for t_len in range(1, targ.shape[1]):
             # passing enc_output to the decoder
             predictions, dec_hidden, _ = decoder(dec_input, dec_hidden, enc_output)
 
-            loss += loss_function(targ[:, t], predictions, loss_object=loss_object)
+            loss += loss_function(targ[:, t_len], predictions, loss_object=loss_object)
 
             # using teacher forcing
-            dec_input = tf.expand_dims(targ[:, t], 1)
+            dec_input = tf.expand_dims(targ[:, t_len], 1)
 
-    batch_loss = (loss / int(targ.shape[1]))
+    batch_loss = loss / int(targ.shape[1])
 
     variables = encoder.trainable_variables + decoder.trainable_variables
 
@@ -262,42 +347,53 @@ def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder, lo
     return batch_loss
 
 
-def evaluate(sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_lang, decoder):
+def evaluate(
+        sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_lang, decoder
+):
+    """
+    translate and plot
+    :param sentence:
+    :param max_length_targ:
+    :param max_length_inp:
+    :param inp_lang:
+    :param encoder:
+    :param targ_lang:
+    :param decoder:
+    :return:
+    """
     logging.info("evaluate")
     attention_plot = np.zeros((max_length_targ, max_length_inp))
 
     sentence = preprocess_sentence(sentence)
 
-    inputs = [inp_lang.word_index[i] for i in sentence.split(' ')]
-    inputs = tf.keras.preprocessing.sequence.pad_sequences([inputs],
-                                                           maxlen=max_length_inp,
-                                                           padding='post')
+    inputs = [inp_lang.word_index[i] for i in sentence.split(" ")]
+    inputs = tf.keras.preprocessing.sequence.pad_sequences(
+        [inputs], maxlen=max_length_inp, padding="post"
+    )
     inputs = tf.convert_to_tensor(inputs)
 
-    result = ''
+    result = ""
 
     hidden = [tf.zeros((1, UNITS))]
     enc_out, enc_hidden = encoder(inputs, hidden)
 
     dec_hidden = enc_hidden
-    dec_input = tf.expand_dims([targ_lang.word_index['<start>']], 0)
+    dec_input = tf.expand_dims([targ_lang.word_index["<start>"]], 0)
 
-    for t in range(max_length_targ):
+    for t_len in range(max_length_targ):
         predictions, dec_hidden, attention_weights = decoder(
-            dec_input,
-            dec_hidden,
-            enc_out
+            dec_input, dec_hidden, enc_out
         )
 
         # storing the attention weights to plot later on
         attention_weights = tf.reshape(attention_weights, (-1,))
-        attention_plot[t] = attention_weights.numpy()
+        attention_plot[t_len] = attention_weights.numpy()
 
         predicted_id = tf.argmax(predictions[0]).numpy()
 
-        result += targ_lang.index_word[predicted_id] + ' '
+        result += targ_lang.index_word[predicted_id] + " "
 
-        if targ_lang.index_word[predicted_id] == '<end>':
+        if targ_lang.index_word[predicted_id] == "<end>":
             return result, sentence, attention_plot
 
         # the predicted ID is fed back into the model
@@ -317,21 +413,34 @@ def plot_attention(attention, sentence, predicted_sentence):
     """
     logging.info("plot_attention")
     fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(1, 1, 1)
-    ax.matshow(attention, cmap='viridis')
+    axes = fig.add_subplot(1, 1, 1)
+    axes.matshow(attention, cmap="viridis")
 
-    fontdict = {'fontsize': 14}
+    fontdict = {"fontsize": 14}
 
-    ax.set_xticklabels([''] + sentence, fontdict=fontdict, rotation=90)
-    ax.set_yticklabels([''] + predicted_sentence, fontdict=fontdict)
+    axes.set_xticklabels([""] + sentence, fontdict=fontdict, rotation=90)
+    axes.set_yticklabels([""] + predicted_sentence, fontdict=fontdict)
 
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    axes.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    axes.yaxis.set_major_locator(ticker.MultipleLocator(1))
 
     plt.show()
 
 
-def translate(sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_lang, decoder):
+def translate(
+        sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_lang, decoder
+):
+    """
+    wrap around evaluate with nice output
+    :param sentence:
+    :param max_length_targ:
+    :param max_length_inp:
+    :param inp_lang:
+    :param encoder:
+    :param targ_lang:
+    :param decoder:
+    :return:
+    """
     logging.info("translate")
     result, sentence, attention_plot = evaluate(
         sentence,
@@ -340,14 +449,16 @@ def translate(sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ
         inp_lang=inp_lang,
         encoder=encoder,
         targ_lang=targ_lang,
-        decoder=decoder
+        decoder=decoder,
     )
 
-    print('Input: %s' % sentence)
-    print('Predicted translation: {}'.format(result))
+    print("Input: %s" % sentence)
+    print("Predicted translation: {}".format(result))
 
-    attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
-    plot_attention(attention_plot, sentence.split(' '), result.split(' '))
+    slice_end = len(result.split(" "))
+    sentence_end = len(sentence.split(" "))
+    attention_plot = attention_plot[:slice_end, :sentence_end]
+    plot_attention(attention_plot, sentence.split(" "), result.split(" "))
 
 
 def main():
@@ -371,10 +482,11 @@ def main():
     """
     logging.info("main")
     logging.info("download dataset")
+    os.makedirs(config.DATA_DIR, exist_ok=True)
     path_to_zip = tf.keras.utils.get_file(
-        fname=os.path.join(config.DATA_DIR, 'spa-eng.zip'),
-        origin='http://storage.googleapis.com/download.tensorflow.org/data/spa-eng.zip',
-        extract=True
+        fname=os.path.join(config.DATA_DIR, "spa-eng.zip"),
+        origin="http://storage.googleapis.com/download.tensorflow.org/data/spa-eng.zip",
+        extract=True,
     )
     logging.info("done downloading dataset")
 
@@ -389,14 +501,24 @@ def main():
     sp_sentence = u"¿Puedo tomar prestado este libro?"
     logging.debug("%r", "en_sentence = {}".format(en_sentence))
     logging.debug("%r", "sp_sentence = {}".format(sp_sentence))
-    logging.debug("%r", "preprocess_sentence(en_sentence) = {}".format(preprocess_sentence(en_sentence)))
-    logging.debug("%r", "preprocess_sentence(sp_sentence) = {}".format(preprocess_sentence(sp_sentence)))
+    logging.debug(
+        "%r",
+        "preprocess_sentence(en_sentence) = {}".format(
+            preprocess_sentence(en_sentence)
+        ),
+    )
+    logging.debug(
+        "%r",
+        "preprocess_sentence(sp_sentence) = {}".format(
+            preprocess_sentence(sp_sentence)
+        ),
+    )
     logging.info("done with sample sentence")
 
     logging.info("construct larger dataset")
-    en, sp = create_dataset(path_to_file, None)
-    logging.debug("en[-1] = {}".format(en[-1]))
-    logging.debug("sp[-1] = {}".format(sp[-1]))
+    english, spanish = create_dataset(path_to_file, None)
+    logging.debug("%r", "english[-1] = {}".format(english[-1]))
+    logging.debug("%r", "spanish[-1] = {}".format(spanish[-1]))
     logging.info("done constructing larger dataset")
 
     logging.info("Limit the size of the dataset to experiment faster (optional)")
@@ -408,25 +530,27 @@ def main():
 
     logging.info("Try experimenting with the size of that dataset")
 
-    input_tensor, target_tensor, inp_lang, targ_lang = load_dataset(path_to_file, NUM_EXAMPLES)
+    input_tensor, target_tensor, inp_lang, targ_lang = load_dataset(
+        path_to_file, NUM_EXAMPLES
+    )
 
     logging.info("Calculate max_length of the target tensors")
     max_length_targ = max_length(target_tensor)
     max_length_inp = max_length(input_tensor)
 
     logging.info("Creating training and validation sets using an 80-20 split")
-    (input_tensor_train,
-     input_tensor_val,
-     target_tensor_train,
-     target_tensor_val) = train_test_split(
-        input_tensor,
-        target_tensor,
-        test_size=0.2
-    )
+    (
+        input_tensor_train,
+        input_tensor_val,
+        target_tensor_train,
+        target_tensor_val
+    ) = train_test_split(input_tensor, target_tensor, test_size=0.2)
 
     logging.info("Show length")
     logging.debug("%r", "len(input_tensor_train) = {}".format(len(input_tensor_train)))
-    logging.debug("%r", "len(target_tensor_train) = {}".format(len(target_tensor_train)))
+    logging.debug(
+        "%r", "len(target_tensor_train) = {}".format(len(target_tensor_train))
+    )
     logging.debug("%r", "len(input_tensor_val) = {}".format(len(input_tensor_val)))
     logging.debug("%r", "len(target_tensor_val) = {}".format(len(target_tensor_val)))
 
@@ -442,13 +566,19 @@ def main():
     vocab_inp_size = len(inp_lang.word_index) + 1
     vocab_tar_size = len(targ_lang.word_index) + 1
 
-    dataset = tf.data.Dataset.from_tensor_slices(
-        (input_tensor_train, target_tensor_train)
-    ).shuffle(buffer_size).batch(BATCH_SIZE, drop_remainder=True)
+    dataset = (
+        tf.data.Dataset.from_tensor_slices(
+            (input_tensor_train, target_tensor_train)
+        ).shuffle(buffer_size).batch(BATCH_SIZE, drop_remainder=True)
+    )
 
     example_input_batch, example_target_batch = next(iter(dataset))
-    logging.debug("%r", "example_input_batch.shape = {}".format(example_input_batch.shape))
-    logging.debug("%r", "example_target_batch.shape = {}".format(example_target_batch.shape))
+    logging.debug(
+        "%r", "example_input_batch.shape = {}".format(example_input_batch.shape)
+    )
+    logging.debug(
+        "%r", "example_target_batch.shape = {}".format(example_target_batch.shape)
+    )
 
     logging.info("Write the encoder and decoder model")
 
@@ -462,13 +592,15 @@ def main():
         The following diagram shows that each input words is assigned a weight by the attention mechanism \
         which is then used by the decoder to predict the next word in the sentence.\
         The below picture and formulas are an example of attention mechanism from \
-        [Luong's paper](https://arxiv.org/abs/1508.04025v5).")
+        [Luong's paper](https://arxiv.org/abs/1508.04025v5)."
+    )
 
     logging.info(
         "The input is put through an encoder model which gives us the encoder output of shape \
         *(batch_size, max_length, hidden_size)*\
          and the encoder hidden state of shape \
-         *(batch_size, hidden_size)*.")
+         *(batch_size, hidden_size)*."
+    )
 
     # pseudo-code:
     #
@@ -490,41 +622,63 @@ def main():
     logging.info("sample input")
     sample_hidden = encoder.initialize_hidden_state()
     sample_output, sample_hidden = encoder.call(example_input_batch, sample_hidden)
-    logging.debug("%r", "Encoder output shape: (batch size, sequence length, units) {}".format(sample_output.shape))
-    logging.debug("%r", "Encoder Hidden state shape: (batch size, units) {}".format(sample_hidden.shape))
+    logging.debug(
+        "%r",
+        "Encoder output shape: (batch size, sequence length, units) {}".format(
+            sample_output.shape
+        ),
+    )
+    logging.debug(
+        "%r",
+        "Encoder Hidden state shape: (batch size, units) {}".format(
+            sample_hidden.shape
+        ),
+    )
 
     attention_layer = BahdanauAttention(units=NUM_ATTENTION_UNITS)
-    attention_result, attention_weights = attention_layer.call(sample_hidden, sample_output)
+    attention_result, attention_weights = attention_layer.call(
+        sample_hidden, sample_output
+    )
 
-    logging.debug("%r", "attention_result.shape = {} should be (batch size, units)".format(attention_result.shape))
-    logging.debug("%r", "attention_weights.shape = {} should be (batch_size, sequence_length, 1)".format(
-        attention_weights.shape))
+    logging.debug(
+        "%r",
+        "attention_result.shape = {} should be (batch size, units)".format(
+            attention_result.shape
+        ),
+    )
+    logging.debug(
+        "%r",
+        "attention_weights.shape = {} should be (batch_size, sequence_length, 1)".format(
+            attention_weights.shape
+        ),
+    )
 
     decoder = Decoder(vocab_tar_size, EMBEDDING_DIM, UNITS, BATCH_SIZE)
 
     sample_decoder_output, _, _ = decoder.call(
-        tf.random.uniform((64, 1)),
-        sample_hidden,
-        sample_output
+        tf.random.uniform((64, 1)), sample_hidden, sample_output
     )
 
-    print('Decoder output shape: (batch_size, vocab size) {}'.format(sample_decoder_output.shape))
+    print(
+        "Decoder output shape: (batch_size, vocab size) {}".format(
+            sample_decoder_output.shape
+        )
+    )
 
     logging.info("Define the optimizer and the loss function")
 
     optimizer = tf.keras.optimizers.Adam()
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
-        from_logits=True,
-        reduction='none'
+        from_logits=True, reduction="none"
     )
 
     logging.info("Checkpoints (Object-based saving)")
 
-    checkpoint_dir = './training_checkpoints'
+    checkpoint_dir = "./training_checkpoints"
     checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-    checkpoint = tf.train.Checkpoint(optimizer=optimizer,
-                                     encoder=encoder,
-                                     decoder=decoder)
+    checkpoint = tf.train.Checkpoint(
+        optimizer=optimizer, encoder=encoder, decoder=decoder
+    )
 
     logging.info("Training")
     #
@@ -552,21 +706,22 @@ def main():
                 enc_hidden=enc_hidden,
                 optimizer=optimizer,
                 decoder=decoder,
-                loss_object=loss_object
+                loss_object=loss_object,
             )
             total_loss += batch_loss
 
             if batch % 100 == 0:
-                print('Epoch {} Batch {} Loss {:.4f}'.format(epoch + 1,
-                                                             batch,
-                                                             batch_loss.numpy()))
+                print(
+                    "Epoch {} Batch {} Loss {:.4f}".format(
+                        epoch + 1, batch, batch_loss.numpy()
+                    )
+                )
         # saving (checkpoint) the model every 2 epochs
         if (epoch + 1) % 2 == 0:
             checkpoint.save(file_prefix=checkpoint_prefix)
 
-        print('Epoch {} Loss {:.4f}'.format(epoch + 1,
-                                            total_loss / steps_per_epoch))
-        print('Time taken for 1 epoch {} sec\n'.format(time.time() - start))
+        print("Epoch {} Loss {:.4f}".format(epoch + 1, total_loss / steps_per_epoch))
+        print("Time taken for 1 epoch {} sec\n".format(time.time() - start))
 
     logging.info("Translate")
     #
@@ -584,45 +739,44 @@ def main():
     checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
     translate(
-        u'hace mucho frio aqui.',
+        u"hace mucho frio aqui.",
         max_length_targ=max_length_targ,
         max_length_inp=max_length_inp,
         inp_lang=inp_lang,
         encoder=encoder,
         targ_lang=targ_lang,
-        decoder=decoder
+        decoder=decoder,
     )
 
     translate(
-        u'esta es mi vida.',
+        u"esta es mi vida.",
         max_length_targ=max_length_targ,
         max_length_inp=max_length_inp,
         inp_lang=inp_lang,
         encoder=encoder,
         targ_lang=targ_lang,
-        decoder=decoder
+        decoder=decoder,
     )
 
     translate(
-        u'¿todavia estan en casa?',
+        u"¿todavia estan english casa?",
         max_length_targ=max_length_targ,
         max_length_inp=max_length_inp,
         inp_lang=inp_lang,
         encoder=encoder,
         targ_lang=targ_lang,
-        decoder=decoder
-
+        decoder=decoder,
     )
 
     # wrong translation
     translate(
-        u'trata de averiguarlo.',
+        u"trata de averiguarlo.",
         max_length_targ=max_length_targ,
         max_length_inp=max_length_inp,
         inp_lang=inp_lang,
         encoder=encoder,
         targ_lang=targ_lang,
-        decoder=decoder
+        decoder=decoder,
     )
 
 
