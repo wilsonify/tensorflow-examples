@@ -34,7 +34,7 @@ from tensorflow_examples.examples.convolutional_neural_networks.cifar_cnn import
 BATCH_SIZE = 64
 EMBEDDING_DIM = 256
 UNITS = 1024
-NUM_EXAMPLES = 30000
+NUM_EXAMPLES = 30000 * 2
 NUM_ATTENTION_UNITS = 10
 EPOCHS = 10
 
@@ -366,7 +366,7 @@ def evaluate(
 
     sentence = preprocess_sentence(sentence)
 
-    inputs = [inp_lang.word_index[i] for i in sentence.split(" ")]
+    inputs = [inp_lang.word_index[i] if inp_lang.word_index[i] else i for i in sentence.split(" ")]
     inputs = tf.keras.preprocessing.sequence.pad_sequences(
         [inputs], maxlen=max_length_inp, padding="post"
     )
