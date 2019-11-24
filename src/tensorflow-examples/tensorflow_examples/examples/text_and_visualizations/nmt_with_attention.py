@@ -42,7 +42,7 @@ from sklearn.model_selection import train_test_split
 # 3. Create a word index and reverse word index (dictionaries mapping from word → id and id → word).
 # 4. Pad each sentence to a maximum length.
 
-# In[4]:
+
 
 
 # Download the file
@@ -55,7 +55,7 @@ path_to_zip = tf.keras.utils.get_file(
 path_to_file = os.path.join(os.path.dirname(path_to_zip), "spa-eng", "spa.txt")
 
 
-# In[5]:
+
 
 
 # Converts the unicode file to ascii
@@ -84,7 +84,7 @@ def preprocess_sentence(w):
     return w
 
 
-# In[6]:
+
 
 
 en_sentence = u"May I borrow this book?"
@@ -93,7 +93,7 @@ print(preprocess_sentence(en_sentence))
 print(preprocess_sentence(sp_sentence).encode('utf-8'))
 
 
-# In[7]:
+
 
 
 # 1. Remove the accents
@@ -107,7 +107,7 @@ def create_dataset(path, num_examples):
     return zip(*word_pairs)
 
 
-# In[8]:
+
 
 
 en, sp = create_dataset(path_to_file, None)
@@ -115,14 +115,14 @@ print(en[-1])
 print(sp[-1])
 
 
-# In[9]:
+
 
 
 def max_length(tensor):
     return max(len(t) for t in tensor)
 
 
-# In[11]:
+
 
 
 def tokenize(lang):
@@ -138,7 +138,7 @@ def tokenize(lang):
     return tensor, lang_tokenizer
 
 
-# In[12]:
+
 
 
 def load_dataset(path, num_examples=None):
@@ -155,7 +155,7 @@ def load_dataset(path, num_examples=None):
 # 
 # Training on the complete dataset of >100,000 sentences will take a long time. To train faster, we can limit the size of the dataset to 30,000 sentences (of course, translation quality degrades with less data):
 
-# In[13]:
+
 
 
 # Try experimenting with the size of that dataset
@@ -165,7 +165,7 @@ input_tensor, target_tensor, inp_lang, targ_lang = load_dataset(path_to_file, nu
 # Calculate max_length of the target tensors
 max_length_targ, max_length_inp = max_length(target_tensor), max_length(input_tensor)
 
-# In[14]:
+
 
 
 # Creating training and validation sets using an 80-20 split
@@ -177,7 +177,7 @@ input_tensor_train, input_tensor_val, target_tensor_train, target_tensor_val = t
 print(len(input_tensor_train), len(target_tensor_train), len(input_tensor_val), len(target_tensor_val))
 
 
-# In[15]:
+
 
 
 def convert(lang, tensor):
@@ -186,7 +186,7 @@ def convert(lang, tensor):
             print("%d ----> %s" % (t, lang.index_word[t]))
 
 
-# In[16]:
+
 
 
 print("Input Language; index to word mapping")
@@ -197,7 +197,7 @@ convert(targ_lang, target_tensor_train[0])
 
 # ### Create a tf.data dataset
 
-# In[17]:
+
 
 
 BUFFER_SIZE = len(input_tensor_train)
@@ -211,7 +211,7 @@ vocab_tar_size = len(targ_lang.word_index) + 1
 dataset = tf.data.Dataset.from_tensor_slices((input_tensor_train, target_tensor_train)).shuffle(BUFFER_SIZE)
 dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
 
-# In[18]:
+
 
 
 example_input_batch, example_target_batch = next(iter(dataset))
@@ -249,7 +249,7 @@ example_input_batch.shape, example_target_batch.shape
 # 
 # The shapes of all the vectors at each step have been specified in the comments in the code:
 
-# In[19]:
+
 
 
 class Encoder(tf.keras.Model):
@@ -272,7 +272,7 @@ class Encoder(tf.keras.Model):
         return tf.zeros((self.batch_sz, self.enc_units))
 
 
-# In[20]:
+
 
 
 encoder = Encoder(vocab_inp_size, embedding_dim, units, BATCH_SIZE)
@@ -284,7 +284,7 @@ print('Encoder output shape: (batch size, sequence length, units) {}'.format(sam
 print('Encoder Hidden state shape: (batch size, units) {}'.format(sample_hidden.shape))
 
 
-# In[21]:
+
 
 
 class BahdanauAttention(tf.keras.layers.Layer):
@@ -316,7 +316,7 @@ class BahdanauAttention(tf.keras.layers.Layer):
         return context_vector, attention_weights
 
 
-# In[22]:
+
 
 
 attention_layer = BahdanauAttention(10)
@@ -326,7 +326,7 @@ print("Attention result shape: (batch size, units) {}".format(attention_result.s
 print("Attention weights shape: (batch_size, sequence_length, 1) {}".format(attention_weights.shape))
 
 
-# In[23]:
+
 
 
 class Decoder(tf.keras.Model):
@@ -366,7 +366,7 @@ class Decoder(tf.keras.Model):
         return x, state, attention_weights
 
 
-# In[24]:
+
 
 
 decoder = Decoder(vocab_tar_size, embedding_dim, units, BATCH_SIZE)
@@ -378,7 +378,7 @@ print('Decoder output shape: (batch_size, vocab size) {}'.format(sample_decoder_
 
 # ## Define the optimizer and the loss function
 
-# In[25]:
+
 
 
 optimizer = tf.keras.optimizers.Adam()
@@ -398,7 +398,7 @@ def loss_function(real, pred):
 
 # ## Checkpoints (Object-based saving)
 
-# In[26]:
+
 
 
 checkpoint_dir = './training_checkpoints'
@@ -418,7 +418,7 @@ checkpoint = tf.train.Checkpoint(optimizer=optimizer,
 # 6. *Teacher forcing* is the technique where the *target word* is passed as the *next input* to the decoder.
 # 7. The final step is to calculate the gradients and apply it to the optimizer and backpropagate.
 
-# In[27]:
+
 
 
 @tf.function
@@ -453,7 +453,7 @@ def train_step(inp, targ, enc_hidden):
     return batch_loss
 
 
-# In[28]:
+
 
 
 EPOCHS = 10
@@ -489,7 +489,7 @@ for epoch in range(EPOCHS):
 # 
 # Note: The encoder output is calculated only once for one input.
 
-# In[27]:
+
 
 
 def evaluate(sentence):
@@ -533,7 +533,7 @@ def evaluate(sentence):
     return result, sentence, attention_plot
 
 
-# In[28]:
+
 
 
 # function for plotting the attention weights
@@ -553,7 +553,7 @@ def plot_attention(attention, sentence, predicted_sentence):
     plt.show()
 
 
-# In[29]:
+
 
 
 def translate(sentence):
@@ -568,28 +568,28 @@ def translate(sentence):
 
 # ## Restore the latest checkpoint and test
 
-# In[30]:
+
 
 
 # restoring the latest checkpoint in checkpoint_dir
 checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
-# In[31]:
+
 
 
 translate(u'hace mucho frio aqui.')
 
-# In[32]:
+
 
 
 translate(u'esta es mi vida.')
 
-# In[33]:
+
 
 
 translate(u'¿todavia estan en casa?')
 
-# In[34]:
+
 
 
 # wrong translation
