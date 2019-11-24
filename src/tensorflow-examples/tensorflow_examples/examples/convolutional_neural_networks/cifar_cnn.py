@@ -8,7 +8,8 @@ import tensorflow as tf
 from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
 HOME_DIR = os.path.expanduser("~")
-ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz") #manually download and extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads",
+                            "cifar-10-python.tar.gz")  # manually download and extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
 DATA_DIR = os.path.join(HOME_DIR, "Downloads", "cifar-10-python")
 BATCH_DIR = os.path.join(DATA_DIR, "cifar-10-batches-py")
 BATCH_SIZE = 50
@@ -24,13 +25,21 @@ def one_hot(vec, vals=10):
 
 def unzip(file_name, destination_dir=DATA_DIR):
     if file_name.endswith(".tar.gz"):
+        extractor = tarfile.open
         compression_type = 'gz'
+        read_mode = "r:{}".format(compression_type)
     elif file_name.endswith(".tar"):
+        extractor = tarfile.open
         compression_type = ''
+        read_mode = "r:{}".format(compression_type)
+    elif file_name.endswith(".zip"):
+        import zipfile
+        extractor = zipfile.ZipFile
+        read_mode = 'r'
 
-    open_args = [file_name, "r:{}".format(compression_type)]
-    with tarfile.open(*open_args) as tar:
-        tar.extractall(path=destination_dir)
+    open_args = [file_name, read_mode]
+    with extractor(*open_args) as ref:
+        ref.extractall(path=destination_dir)
 
 
 def unpickle(file):
