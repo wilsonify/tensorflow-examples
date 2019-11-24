@@ -29,10 +29,14 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from tensorflow_examples import config
+from tensorflow_examples.examples.convolutional_neural_networks.cifar_cnn import unzip
 
 BATCH_SIZE = 64
-embedding_dim = 256
-units = 1024
+EMBEDDING_DIM = 256
+UNITS = 1024
+NUM_EXAMPLES = 30000
+NUM_ATTENTION_UNITS = 10
+EPOCHS = 10
 
 
 def max_length(tensor):
@@ -96,7 +100,8 @@ def preprocess_sentence(w):
 
     # creating a space between a word and the punctuation following it
     # eg: "he is a boy." => "he is a boy ."
-    # Reference:- https://stackoverflow.com/questions/3645931/python-padding-punctuation-with-white-spaces-keeping-punctuation
+    # Reference:
+    # https://stackoverflow.com/questions/3645931/python-padding-punctuation-with-white-spaces-keeping-punctuation
     w = re.sub(r"([?.!,¿])", r" \1 ", w)
     w = re.sub(r"""[" ]+""", " ", w)
 
@@ -113,6 +118,8 @@ def preprocess_sentence(w):
 
 def convert(lang, tensor):
     logging.info("convert")
+    logging.debug("%r", "lang = {}".format(lang))
+    logging.debug("%r", "tensor = {}".format(tensor))
     for t in tensor:
         if t != 0:
             print("%d ----> %s" % (t, lang.index_word[t]))
@@ -191,7 +198,7 @@ class Decoder(tf.keras.Model):
     def call(self, x, hidden, enc_output):
         logging.debug("call")
         # enc_output shape == (batch_size, max_length, hidden_size)
-        context_vector, attention_weights = self.attention(hidden, enc_output)
+        context_vector, attention_weights = self.attention.call(hidden, enc_output)
 
         # x shape after passing through embedding == (batch_size, 1, embedding_dim)
         x = self.embedding(x)
@@ -223,7 +230,7 @@ def loss_function(real, pred, loss_object):
 
 
 @tf.function
-def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder):
+def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder, loss_object):
     logging.debug("train_step")
     loss = 0
 
@@ -239,7 +246,7 @@ def train_step(inp, targ, targ_lang, encoder, enc_hidden, optimizer, decoder):
             # passing enc_output to the decoder
             predictions, dec_hidden, _ = decoder(dec_input, dec_hidden, enc_output)
 
-            loss += loss_function(targ[:, t], predictions)
+            loss += loss_function(targ[:, t], predictions, loss_object=loss_object)
 
             # using teacher forcing
             dec_input = tf.expand_dims(targ[:, t], 1)
@@ -269,7 +276,7 @@ def evaluate(sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_
 
     result = ''
 
-    hidden = [tf.zeros((1, units))]
+    hidden = [tf.zeros((1, UNITS))]
     enc_out, enc_hidden = encoder(inputs, hidden)
 
     dec_hidden = enc_hidden
@@ -324,11 +331,19 @@ def plot_attention(attention, sentence, predicted_sentence):
     plt.show()
 
 
-def translate(sentence):
+def translate(sentence, max_length_targ, max_length_inp, inp_lang, encoder, targ_lang, decoder):
     logging.info("translate")
-    result, sentence, attention_plot = evaluate(sentence)
+    result, sentence, attention_plot = evaluate(
+        sentence,
+        max_length_targ=max_length_targ,
+        max_length_inp=max_length_inp,
+        inp_lang=inp_lang,
+        encoder=encoder,
+        targ_lang=targ_lang,
+        decoder=decoder
+    )
 
-    print('Input: %s' % (sentence))
+    print('Input: %s' % sentence)
     print('Predicted translation: {}'.format(result))
 
     attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
@@ -337,36 +352,52 @@ def translate(sentence):
 
 def main():
     """
-    Download and prepare the dataset
-    We'll use a language dataset provided by http://www.manythings.org/anki/. This dataset contains language translation pairs in the format:
+    Download dataset
+    prepare the dataset
+    We'll use a language dataset provided by http://www.manythings.org/anki/.
+    This dataset contains language translation pairs in the format:
     ```
     May I borrow this book?	¿Puedo tomar prestado este libro?
     ```
-    There are a variety of languages available, but we'll use the English-Spanish dataset. For convenience, we've hosted a copy of this dataset on Google Cloud, but you can also download your own copy. After downloading the dataset, here are the steps we'll take to prepare the data:
+    There are a variety of languages available, but we'll use the English-Spanish dataset.
+    For convenience, we've hosted a copy of this dataset on Google Cloud,
+    but you can also download your own copy.
+    After downloading the dataset, here are the steps we'll take to prepare the data:
 
     1. Add a *start* and *end* token to each sentence.
     2. Clean the sentences by removing special characters.
     3. Create a word index and reverse word index (dictionaries mapping from word → id and id → word).
     4. Pad each sentence to a maximum length.
-    Download the file
     """
     logging.info("main")
+    logging.info("download dataset")
     path_to_zip = tf.keras.utils.get_file(
-        fname='spa-eng.zip',
+        fname=os.path.join(config.DATA_DIR, 'spa-eng.zip'),
         origin='http://storage.googleapis.com/download.tensorflow.org/data/spa-eng.zip',
         extract=True
     )
+    logging.info("done downloading dataset")
+
+    logging.info("extract dataset")
+    unzip(path_to_zip, destination_dir=config.DATA_DIR)
+    logging.info("done extracting dataset")
 
     path_to_file = os.path.join(os.path.dirname(path_to_zip), "spa-eng", "spa.txt")
 
+    logging.info("test sample sentence")
     en_sentence = u"May I borrow this book?"
     sp_sentence = u"¿Puedo tomar prestado este libro?"
-    print(preprocess_sentence(en_sentence))
-    print(preprocess_sentence(sp_sentence).encode('utf-8'))
+    logging.debug("%r", "en_sentence = {}".format(en_sentence))
+    logging.debug("%r", "sp_sentence = {}".format(sp_sentence))
+    logging.debug("%r", "preprocess_sentence(en_sentence) = {}".format(preprocess_sentence(en_sentence)))
+    logging.debug("%r", "preprocess_sentence(sp_sentence) = {}".format(preprocess_sentence(sp_sentence)))
+    logging.info("done with sample sentence")
 
+    logging.info("construct larger dataset")
     en, sp = create_dataset(path_to_file, None)
-    print(en[-1])
-    print(sp[-1])
+    logging.debug("en[-1] = {}".format(en[-1]))
+    logging.debug("sp[-1] = {}".format(sp[-1]))
+    logging.info("done constructing larger dataset")
 
     logging.info("Limit the size of the dataset to experiment faster (optional)")
     logging.info(
@@ -376,25 +407,28 @@ def main():
     )
 
     logging.info("Try experimenting with the size of that dataset")
-    num_examples = 30000
-    input_tensor, target_tensor, inp_lang, targ_lang = load_dataset(path_to_file, num_examples)
+
+    input_tensor, target_tensor, inp_lang, targ_lang = load_dataset(path_to_file, NUM_EXAMPLES)
 
     logging.info("Calculate max_length of the target tensors")
     max_length_targ = max_length(target_tensor)
     max_length_inp = max_length(input_tensor)
 
     logging.info("Creating training and validation sets using an 80-20 split")
-    input_tensor_train, \
-    input_tensor_val, \
-    target_tensor_train, \
-    target_tensor_val = train_test_split(
+    (input_tensor_train,
+     input_tensor_val,
+     target_tensor_train,
+     target_tensor_val) = train_test_split(
         input_tensor,
         target_tensor,
         test_size=0.2
     )
 
     logging.info("Show length")
-    print(len(input_tensor_train), len(target_tensor_train), len(input_tensor_val), len(target_tensor_val))
+    logging.debug("%r", "len(input_tensor_train) = {}".format(len(input_tensor_train)))
+    logging.debug("%r", "len(target_tensor_train) = {}".format(len(target_tensor_train)))
+    logging.debug("%r", "len(input_tensor_val) = {}".format(len(input_tensor_val)))
+    logging.debug("%r", "len(target_tensor_val) = {}".format(len(target_tensor_val)))
 
     print("Input Language; index to word mapping")
     convert(inp_lang, input_tensor_train[0])
@@ -403,32 +437,47 @@ def main():
     convert(targ_lang, target_tensor_train[0])
 
     logging.info("Create a tf.data dataset")
-
-    BUFFER_SIZE = len(input_tensor_train)
+    buffer_size = len(input_tensor_train)
     steps_per_epoch = len(input_tensor_train) // BATCH_SIZE
     vocab_inp_size = len(inp_lang.word_index) + 1
     vocab_tar_size = len(targ_lang.word_index) + 1
 
     dataset = tf.data.Dataset.from_tensor_slices(
         (input_tensor_train, target_tensor_train)
-    ).shuffle(BUFFER_SIZE)
-    dataset = dataset.batch(BATCH_SIZE, drop_remainder=True)
+    ).shuffle(buffer_size).batch(BATCH_SIZE, drop_remainder=True)
 
     example_input_batch, example_target_batch = next(iter(dataset))
-    example_input_batch.shape, example_target_batch.shape
+    logging.debug("%r", "example_input_batch.shape = {}".format(example_input_batch.shape))
+    logging.debug("%r", "example_target_batch.shape = {}".format(example_target_batch.shape))
 
     logging.info("Write the encoder and decoder model")
 
     logging.info(
-        "Implement an encoder-decoder model with attention which you can read about in the TensorFlow [Neural Machine Translation (seq2seq) tutorial](https://github.com/tensorflow/nmt). This example uses a more recent set of APIs. This notebook implements the [attention equations](https://github.com/tensorflow/nmt#background-on-the-attention-mechanism) from the seq2seq tutorial. The following diagram shows that each input words is assigned a weight by the attention mechanism which is then used by the decoder to predict the next word in the sentence. The below picture and formulas are an example of attention mechanism from [Luong's paper](https://arxiv.org/abs/1508.04025v5).")
+        "Implement an encoder-decoder model with attention which you can read about in the TensorFlow \
+        [Neural Machine Translation (seq2seq) tutorial](https://github.com/tensorflow/nmt). \
+        This example uses a more recent set of APIs. \
+        This notebook implements the \
+        [attention equations](https://github.com/tensorflow/nmt#background-on-the-attention-mechanism)\
+        from the seq2seq tutorial.\
+        The following diagram shows that each input words is assigned a weight by the attention mechanism \
+        which is then used by the decoder to predict the next word in the sentence.\
+        The below picture and formulas are an example of attention mechanism from \
+        [Luong's paper](https://arxiv.org/abs/1508.04025v5).")
 
     logging.info(
-        "The input is put through an encoder model which gives us the encoder output of shape *(batch_size, max_length, hidden_size)* and the encoder hidden state of shape *(batch_size, hidden_size)*.")
+        "The input is put through an encoder model which gives us the encoder output of shape \
+        *(batch_size, max_length, hidden_size)*\
+         and the encoder hidden state of shape \
+         *(batch_size, hidden_size)*.")
 
     # pseudo-code:
     #
     # * `score = FC(tanh(FC(EO) + FC(H)))`
-    # * `attention weights = softmax(score, axis = 1)`. Softmax by default is applied on the last axis but here we want to apply it on the *1st axis*, since the shape of score is *(batch_size, max_length, hidden_size)*. `Max_length` is the length of our input. Since we are trying to assign a weight to each input, softmax should be applied on that axis.
+    # * `attention weights = softmax(score, axis = 1)`.
+    #   Softmax by default is applied on the last axis but here we want to apply it on the *1st axis*,
+    #   since the shape of score is *(batch_size, max_length, hidden_size)*.
+    #   `Max_length` is the length of our input.
+    #   Since we are trying to assign a weight to each input, softmax should be applied on that axis.
     # * `context vector = sum(attention weights * EO, axis = 1)`. Same reason as above for choosing axis as 1.
     # * `embedding output` = The input to the decoder X is passed through an embedding layer.
     # * `merged vector = concat(embedding output, context vector)`
@@ -436,24 +485,28 @@ def main():
     #
     # The shapes of all the vectors at each step have been specified in the comments in the code:
 
-    encoder = Encoder(vocab_inp_size, embedding_dim, units, BATCH_SIZE)
+    encoder = Encoder(vocab_inp_size, EMBEDDING_DIM, UNITS, BATCH_SIZE)
 
     logging.info("sample input")
     sample_hidden = encoder.initialize_hidden_state()
-    sample_output, sample_hidden = encoder(example_input_batch, sample_hidden)
-    print('Encoder output shape: (batch size, sequence length, units) {}'.format(sample_output.shape))
-    print('Encoder Hidden state shape: (batch size, units) {}'.format(sample_hidden.shape))
+    sample_output, sample_hidden = encoder.call(example_input_batch, sample_hidden)
+    logging.debug("%r", "Encoder output shape: (batch size, sequence length, units) {}".format(sample_output.shape))
+    logging.debug("%r", "Encoder Hidden state shape: (batch size, units) {}".format(sample_hidden.shape))
 
-    attention_layer = BahdanauAttention(10)
-    attention_result, attention_weights = attention_layer(sample_hidden, sample_output)
+    attention_layer = BahdanauAttention(units=NUM_ATTENTION_UNITS)
+    attention_result, attention_weights = attention_layer.call(sample_hidden, sample_output)
 
-    print("Attention result shape: (batch size, units) {}".format(attention_result.shape))
-    print("Attention weights shape: (batch_size, sequence_length, 1) {}".format(attention_weights.shape))
+    logging.debug("%r", "attention_result.shape = {} should be (batch size, units)".format(attention_result.shape))
+    logging.debug("%r", "attention_weights.shape = {} should be (batch_size, sequence_length, 1)".format(
+        attention_weights.shape))
 
-    decoder = Decoder(vocab_tar_size, embedding_dim, units, BATCH_SIZE)
+    decoder = Decoder(vocab_tar_size, EMBEDDING_DIM, UNITS, BATCH_SIZE)
 
-    sample_decoder_output, _, _ = decoder(tf.random.uniform((64, 1)),
-                                          sample_hidden, sample_output)
+    sample_decoder_output, _, _ = decoder.call(
+        tf.random.uniform((64, 1)),
+        sample_hidden,
+        sample_output
+    )
 
     print('Decoder output shape: (batch_size, vocab size) {}'.format(sample_decoder_output.shape))
 
@@ -476,14 +529,13 @@ def main():
     logging.info("Training")
     #
     # 1. Pass the *input* through the *encoder* which return *encoder output* and the *encoder hidden state*.
-    # 2. The encoder output, encoder hidden state and the decoder input (which is the *start token*) is passed to the decoder.
+    # 2. The encoder output, encoder hidden state and the decoder input
+    #       (which is the *start token*) is passed to the decoder.
     # 3. The decoder returns the *predictions* and the *decoder hidden state*.
     # 4. The decoder hidden state is then passed back into the model and the predictions are used to calculate the loss.
     # 5. Use *teacher forcing* to decide the next input to the decoder.
     # 6. *Teacher forcing* is the technique where the *target word* is passed as the *next input* to the decoder.
     # 7. The final step is to calculate the gradients and apply it to the optimizer and backpropagate.
-
-    EPOCHS = 10
 
     for epoch in range(EPOCHS):
         start = time.time()
@@ -492,7 +544,16 @@ def main():
         total_loss = 0
 
         for (batch, (inp, targ)) in enumerate(dataset.take(steps_per_epoch)):
-            batch_loss = train_step(inp, targ, enc_hidden)
+            batch_loss = train_step(
+                inp,
+                targ=targ,
+                targ_lang=targ_lang,
+                encoder=encoder,
+                enc_hidden=enc_hidden,
+                optimizer=optimizer,
+                decoder=decoder,
+                loss_object=loss_object
+            )
             total_loss += batch_loss
 
             if batch % 100 == 0:
@@ -509,7 +570,9 @@ def main():
 
     logging.info("Translate")
     #
-    # * The evaluate function is similar to the training loop, except we don't use *teacher forcing* here. The input to the decoder at each time step is its previous predictions along with the hidden state and the encoder output.
+    # The evaluate function is similar to the training loop, except we don't use *teacher forcing* here.
+    # The input to the decoder at each time step is its previous predictions
+    # along with the hidden state and the encoder output.
     # * Stop predicting when the model predicts the *end token*.
     # * And store the *attention weights for every time step*.
     #
@@ -520,20 +583,47 @@ def main():
     # restoring the latest checkpoint in checkpoint_dir
     checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
-    translate(u'hace mucho frio aqui.')
+    translate(
+        u'hace mucho frio aqui.',
+        max_length_targ=max_length_targ,
+        max_length_inp=max_length_inp,
+        inp_lang=inp_lang,
+        encoder=encoder,
+        targ_lang=targ_lang,
+        decoder=decoder
+    )
 
-    translate(u'esta es mi vida.')
+    translate(
+        u'esta es mi vida.',
+        max_length_targ=max_length_targ,
+        max_length_inp=max_length_inp,
+        inp_lang=inp_lang,
+        encoder=encoder,
+        targ_lang=targ_lang,
+        decoder=decoder
+    )
 
-    translate(u'¿todavia estan en casa?')
+    translate(
+        u'¿todavia estan en casa?',
+        max_length_targ=max_length_targ,
+        max_length_inp=max_length_inp,
+        inp_lang=inp_lang,
+        encoder=encoder,
+        targ_lang=targ_lang,
+        decoder=decoder
+
+    )
 
     # wrong translation
-    translate(u'trata de averiguarlo.')
-
-    # ## Next steps
-    #
-    # * [Download a different dataset](http://www.manythings.org/anki/) to experiment with translations, for example, English to German, or English to French.
-    # * Experiment with training on a larger dataset, or using more epochs
-    #
+    translate(
+        u'trata de averiguarlo.',
+        max_length_targ=max_length_targ,
+        max_length_inp=max_length_inp,
+        inp_lang=inp_lang,
+        encoder=encoder,
+        targ_lang=targ_lang,
+        decoder=decoder
+    )
 
 
 if __name__ == "__main__":
