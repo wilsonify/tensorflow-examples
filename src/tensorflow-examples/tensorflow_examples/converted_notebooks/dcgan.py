@@ -15,21 +15,21 @@ are one of the most interesting ideas in computer science today.
  Two models are trained simultaneously by an adversarial process.
  A *generator* ("the artist") learns to create images that look real,
  while a *discriminator* ("the art critic") learns to tell real images apart from fakes.
-# 
+#
 # ![A diagram of a generator and discriminator](./images/gan1.png)
-# 
+#
 # During training, the *generator* progressively becomes better at creating images that look real,
 while the *discriminator* becomes better at telling them apart.
  The process reaches equilibrium when the *discriminator* can no longer distinguish real images from fakes.
-# 
+#
 # ![A second diagram of a generator and discriminator](./images/gan2.png)
-# 
+#
 # This notebook demonstrates this process on the MNIST dataset.
 The following animation shows a series of images produced by the *generator* as it was trained for 50 epochs.
  The images begin as random noise, and increasingly resemble hand written digits over time.
-# 
+#
 # ![sample output](https://tensorflow.org/images/gan/dcgan.gif)
-# 
+#
 # To learn more about GANs, we recommend MIT's [Intro to Deep Learning](http://introtodeeplearning.com/) course.
 """
 import glob
@@ -43,8 +43,6 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from IPython import display
 
-logging.info("tensorflow version = {}".format(tf.__version__))
-
 # ### Load and prepare the dataset
 #
 # You will use the MNIST dataset to train the generator and the discriminator.
@@ -53,13 +51,13 @@ logging.info("tensorflow version = {}".format(tf.__version__))
 # In[8]:
 
 
-(train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
+(TRAIN_IMAGES, TRAIN_LABELS), (_, _) = tf.keras.datasets.mnist.load_data()
 
 # In[9]:
 
 
-train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype("float32")
-train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
+TRAIN_IMAGES = TRAIN_IMAGES.reshape(TRAIN_IMAGES.shape[0], 28, 28, 1).astype("float32")
+TRAIN_IMAGES = (TRAIN_IMAGES - 127.5) / 127.5  # Normalize the images to [-1, 1]
 
 # In[10]:
 
@@ -71,28 +69,28 @@ BATCH_SIZE = 256
 
 
 # Batch and shuffle the data
-train_dataset = tf.data.Dataset.from_tensor_slices(train_images) \
+TRAIN_DATASET = tf.data.Dataset.from_tensor_slices(TRAIN_IMAGES) \
     .shuffle(BUFFER_SIZE) \
     .batch(BATCH_SIZE)
 
 
-# ## Create the models
-#
+# In[12]:
+# Create the models
 # Both the generator and discriminator are defined using the
 # [Keras Sequential API](https://www.tensorflow.org/guide/keras#sequential_model).
 
-# ### The Generator
-#
-# The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling)
-# tf.keras.layers.to produce an image from a seed (random noise).
-# Start with a `Dense` layer that takes this seed as input,
-# then upsample several times until you reach the desired image size of 28x28x1.
-# Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
-
-# In[12]:
-
 
 def make_generator_model():
+    """
+    The Generator
+    The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling)
+    tf.keras.layers.to produce an image from a seed (random noise).
+    Start with a `Dense` layer that takes this seed as input,
+    then upsample several times until you reach the desired image size of 28x28x1.
+    Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
+
+    :return:
+    """
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(100,)))
     model.add(tf.keras.layers.BatchNormalization())
@@ -134,22 +132,24 @@ def make_generator_model():
 # In[13]:
 
 
-generator = make_generator_model()
+GENERATOR = make_generator_model()
 
-noise = tf.random.normal([1, 100])
-generated_image = generator(noise, training=False)
+NOISE = tf.random.normal([1, 100])
+GENERATED_IMAGE = GENERATOR(NOISE, training=False)
 
-plt.imshow(generated_image[0, :, :, 0], cmap="gray")
+plt.imshow(GENERATED_IMAGE[0, :, :, 0], cmap="gray")
 
-
-# ### The Discriminator
-#
-# The discriminator is a CNN-based image classifier.
 
 # In[14]:
 
 
 def make_discriminator_model():
+    """
+    The Discriminator
+    The discriminator is a CNN-based image classifier.
+
+    :return:
+    """
     model = tf.keras.Sequential()
     model.add(
         tf.keras.layers.Conv2D(
@@ -175,9 +175,9 @@ def make_discriminator_model():
 # In[15]:
 
 
-discriminator = make_discriminator_model()
-decision = discriminator(generated_image)
-print(decision)
+DISCRIMINATOR = make_discriminator_model()
+DECISION = DISCRIMINATOR(GENERATED_IMAGE)
+print(DECISION)
 
 # ## Define the loss and optimizers
 #
@@ -188,36 +188,44 @@ print(decision)
 
 
 # This method returns a helper function to compute cross entropy loss
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+CROSS_ENTROPY = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
-
-# ### Discriminator loss
-#
-# This method quantifies how well the discriminator is able to distinguish real images from fakes.
-# It compares the discriminator's predictions on real images to an array of 1s,
-# and the discriminator's predictions on fake (generated) images to an array of 0s.
 
 # In[17]:
 
 
 def discriminator_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    """
+    Discriminator loss
+    This method quantifies how well the discriminator is able to distinguish real images from fakes.
+    It compares the discriminator's predictions on real images to an array of 1s,
+    and the discriminator's predictions on fake (generated) images to an array of 0s.
+
+    :param real_output:
+    :param fake_output:
+    :return:
+    """
+    real_loss = CROSS_ENTROPY(tf.ones_like(real_output), real_output)
+    fake_loss = CROSS_ENTROPY(tf.zeros_like(fake_output), fake_output)
     total_loss = real_loss + fake_loss
     return total_loss
 
-
-# ### Generator loss
-# The generator's loss quantifies how well it was able to trick the discriminator.
-# Intuitively, if the generator is performing well,
-# the discriminator will classify the fake images as real (or 1).
-# Here, we will compare the discriminators decisions on the generated images to an array of 1s.
 
 # In[18]:
 
 
 def generator_loss(fake_output):
-    return cross_entropy(tf.ones_like(fake_output), fake_output)
+    """
+    ### Generator loss
+    The generator's loss quantifies how well it was able to trick the discriminator.
+    Intuitively, if the generator is performing well,
+    the discriminator will classify the fake images as real (or 1).
+    Here, we will compare the discriminators decisions on the generated images to an array of 1s.
+
+    :param fake_output:
+    :return:
+    """
+    return CROSS_ENTROPY(tf.ones_like(fake_output), fake_output)
 
 
 # The discriminator and the generator optimizers are different since we will train two networks separately.
@@ -225,8 +233,8 @@ def generator_loss(fake_output):
 # In[19]:
 
 
-generator_optimizer = tf.keras.optimizers.Adam(1e-4)
-discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
+GENERATOR_OPTIMIZER = tf.keras.optimizers.Adam(1e-4)
+DISCRIMINATOR_OPTIMIZER = tf.keras.optimizers.Adam(1e-4)
 
 # ### Save checkpoints
 # This notebook also demonstrates how to save and restore models,
@@ -235,13 +243,13 @@ discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 # In[20]:
 
 
-checkpoint_dir = "./training_checkpoints"
-checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-checkpoint = tf.train.Checkpoint(
-    generator_optimizer=generator_optimizer,
-    discriminator_optimizer=discriminator_optimizer,
-    generator=generator,
-    discriminator=discriminator,
+CHECKPOINT_DIR = "./training_checkpoints"
+CHECKPOINT_PREFIX = os.path.join(CHECKPOINT_DIR, "ckpt")
+CHECKPOINT = tf.train.Checkpoint(
+    generator_optimizer=GENERATOR_OPTIMIZER,
+    discriminator_optimizer=DISCRIMINATOR_OPTIMIZER,
+    generator=GENERATOR,
+    discriminator=DISCRIMINATOR,
 )
 
 # ## Define the training loop
@@ -252,48 +260,53 @@ checkpoint = tf.train.Checkpoint(
 
 
 EPOCHS = 50
-noise_dim = 100
-num_examples_to_generate = 16
+NOISE_DIM = 100
+NUM_EXAMPLES_TO_GENERATE = 16
 
 # We will reuse this seed overtime (so it's easier)
 # to visualize progress in the animated GIF)
-seed = tf.random.normal([num_examples_to_generate, noise_dim])
+SEED = tf.random.normal([NUM_EXAMPLES_TO_GENERATE, NOISE_DIM])
 
-
-# The training loop begins with generator receiving a random seed as input.
-# That seed is used to produce an image.
-# The discriminator is then used to classify real images
-# (drawn from the training set) and fakes images (produced by the generator).
-# The loss is calculated for each of these models, and the gradients are used to update the generator and discriminator.
 
 # In[22]:
 
 
-# Notice the use of `tf.function`
-# This annotation causes the function to be "compiled".
 @tf.function
 def train_step(images):
-    noise_rand = tf.random.normal([BATCH_SIZE, noise_dim])
+    """
+    Notice the use of `tf.function`
+    This annotation causes the function to be "compiled".
+    The training loop begins with generator receiving a random seed as input.
+    That seed is used to produce an image.
+    The discriminator is then used to classify real images
+    (drawn from the training set) and fakes images (produced by the generator).
+    The loss is calculated for each of these models,
+    and the gradients are used to update the generator and discriminator.
+
+    :param images:
+    :return:
+    """
+    noise_rand = tf.random.normal([BATCH_SIZE, NOISE_DIM])
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        generated_images = generator(noise_rand, training=True)
+        generated_images = GENERATOR(noise_rand, training=True)
 
-        real_output = discriminator(images, training=True)
-        fake_output = discriminator(generated_images, training=True)
+        real_output = DISCRIMINATOR(images, training=True)
+        fake_output = DISCRIMINATOR(generated_images, training=True)
 
         gen_loss = generator_loss(fake_output)
         disc_loss = discriminator_loss(real_output, fake_output)
 
-    gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
+    gradients_of_generator = gen_tape.gradient(gen_loss, GENERATOR.trainable_variables)
     gradients_of_discriminator = disc_tape.gradient(
-        disc_loss, discriminator.trainable_variables
+        disc_loss, DISCRIMINATOR.trainable_variables
     )
 
-    generator_optimizer.apply_gradients(
-        zip(gradients_of_generator, generator.trainable_variables)
+    GENERATOR_OPTIMIZER.apply_gradients(
+        zip(gradients_of_generator, GENERATOR.trainable_variables)
     )
-    discriminator_optimizer.apply_gradients(
-        zip(gradients_of_discriminator, discriminator.trainable_variables)
+    DISCRIMINATOR_OPTIMIZER.apply_gradients(
+        zip(gradients_of_discriminator, DISCRIMINATOR.trainable_variables)
     )
 
 
@@ -301,6 +314,12 @@ def train_step(images):
 
 
 def train(dataset, epochs):
+    """
+    handle epoch logic
+    :param dataset:
+    :param epochs:
+    :return:
+    """
     for epoch in range(epochs):
         start = time.time()
 
@@ -309,20 +328,19 @@ def train(dataset, epochs):
 
         # Produce images for the GIF as we go
         display.clear_output(wait=True)
-        generate_and_save_images(generator, epoch + 1, seed)
+        generate_and_save_images(GENERATOR, epoch + 1, SEED)
 
         # Save the model every 15 epochs
         if (epoch + 1) % 15 == 0:
-            checkpoint.save(file_prefix=checkpoint_prefix)
+            CHECKPOINT.save(file_prefix=CHECKPOINT_PREFIX)
 
         print("Time for epoch {} is {} sec".format(epoch + 1, time.time() - start))
 
     # Generate after the final epoch
     display.clear_output(wait=True)
-    generate_and_save_images(generator, epochs, seed)
+    generate_and_save_images(GENERATOR, epochs, SEED)
 
 
-# **Generate and save images**
 #
 #
 
@@ -330,8 +348,17 @@ def train(dataset, epochs):
 
 
 def generate_and_save_images(model, epoch, test_input):
+    """
     # Notice `training` is set to False.
     # This is so all tf.keras.layers.run in inference mode (batchnorm).
+
+    # **Generate and save images**
+
+    :param model:
+    :param epoch:
+    :param test_input:
+    :return:
+    """
     predictions = model(test_input, training=False)
 
     fig = plt.figure(figsize=(4, 4))
@@ -359,14 +386,14 @@ def generate_and_save_images(model, epoch, test_input):
 # In[25]:
 
 
-train(train_dataset, EPOCHS)
+train(TRAIN_DATASET, EPOCHS)
 
 # Restore the latest checkpoint.
 
 # In[26]:
 
 
-checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+CHECKPOINT.restore(tf.train.latest_checkpoint(CHECKPOINT_DIR))
 
 
 # ## Create a GIF
@@ -375,8 +402,12 @@ checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 # In[27]:
 
 
-# Display a single image using the epoch number
 def display_image(epoch_no):
+    """
+    # Display a single image using the epoch number
+    :param epoch_no:
+    :return:
+    """
     return PIL.Image.open("image_at_epoch_{:04d}.png".format(epoch_no))
 
 
@@ -390,24 +421,22 @@ display_image(EPOCHS)
 # In[29]:
 
 
-anim_file = "dcgan.gif"
+ANIM_FILE = "dcgan.gif"
 
-with imageio.get_writer(anim_file, mode="I") as writer:
-    filenames = glob.glob("image*.png")
-    filenames = sorted(filenames)
-    last = -1
-    for i, filename in enumerate(filenames):
+with imageio.get_writer(ANIM_FILE, mode="I") as writer:
+    FILENAMES = glob.glob("image*.png")
+    FILENAMES = sorted(FILENAMES)
+    LAST = -1
+    for i, filename in enumerate(FILENAMES):
         frame = 2 * (i ** 0.5)
-        if round(frame) > round(last):
-            last = frame
+        if round(frame) > round(LAST):
+            LAST = frame
         else:
             continue
         image = imageio.imread(filename)
         writer.append_data(image)
-    image = imageio.imread(filename)
-    writer.append_data(image)
 
-display.Image(filename=anim_file)
+display.Image(filename=ANIM_FILE)
 
 # ## Next steps
 #
