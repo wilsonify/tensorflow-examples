@@ -4,21 +4,32 @@
 
 # # Deep Convolutional Generative Adversarial Network
 
-# This tutorial demonstrates how to generate images of handwritten digits using a [Deep Convolutional Generative Adversarial Network](https://arxiv.org/pdf/1511.06434.pdf) (DCGAN). The code is written using the [Keras Sequential API](https://www.tensorflow.org/guide/keras) with a `tf.GradientTape` training loop.
+# This tutorial demonstrates how to generate images of handwritten digits using a
+[Deep Convolutional Generative Adversarial Network](https://arxiv.org/pdf/1511.06434.pdf) (DCGAN).
+The code is written using the
+[Keras Sequential API](https://www.tensorflow.org/guide/keras) with a `tf.GradientTape` training loop.
 
 # ## What are GANs?
-# [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661) (GANs) are one of the most interesting ideas in computer science today. Two models are trained simultaneously by an adversarial process. A *generator* ("the artist") learns to create images that look real, while a *discriminator* ("the art critic") learns to tell real images apart from fakes.
-#
+# [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661) (GANs)
+are one of the most interesting ideas in computer science today.
+ Two models are trained simultaneously by an adversarial process.
+ A *generator* ("the artist") learns to create images that look real,
+ while a *discriminator* ("the art critic") learns to tell real images apart from fakes.
+# 
 # ![A diagram of a generator and discriminator](./images/gan1.png)
-#
-# During training, the *generator* progressively becomes better at creating images that look real, while the *discriminator* becomes better at telling them apart. The process reaches equilibrium when the *discriminator* can no longer distinguish real images from fakes.
-#
+# 
+# During training, the *generator* progressively becomes better at creating images that look real,
+while the *discriminator* becomes better at telling them apart.
+ The process reaches equilibrium when the *discriminator* can no longer distinguish real images from fakes.
+# 
 # ![A second diagram of a generator and discriminator](./images/gan2.png)
-#
-# This notebook demonstrates this process on the MNIST dataset. The following animation shows a series of images produced by the *generator* as it was trained for 50 epochs. The images begin as random noise, and increasingly resemble hand written digits over time.
-#
+# 
+# This notebook demonstrates this process on the MNIST dataset.
+The following animation shows a series of images produced by the *generator* as it was trained for 50 epochs.
+ The images begin as random noise, and increasingly resemble hand written digits over time.
+# 
 # ![sample output](https://tensorflow.org/images/gan/dcgan.gif)
-#
+# 
 # To learn more about GANs, we recommend MIT's [Intro to Deep Learning](http://introtodeeplearning.com/) course.
 """
 import logging
@@ -30,10 +41,11 @@ logging.info("tensorflow version = {}".format(tf.__version__))
 import glob
 import imageio
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import PIL
 import time
-
+import IPython
 from IPython import display
 
 # ### Load and prepare the dataset
@@ -377,22 +389,7 @@ with imageio.get_writer(anim_file, mode="I") as writer:
     image = imageio.imread(filename)
     writer.append_data(image)
 
-import IPython
-
-if IPython.version_info > (6, 2, 0, ""):
-    display.Image(filename=anim_file)
-
-# If you're working in Colab you can download the animation with the code below:
-
-# In[30]:
-
-
-try:
-    from google.colab import files
-except ImportError:
-    pass
-else:
-    files.download(anim_file)
+display.Image(filename=anim_file)
 
 # ## Next steps
 #
