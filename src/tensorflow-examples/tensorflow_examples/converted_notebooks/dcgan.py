@@ -49,7 +49,7 @@ from IPython import display
 # In[9]:
 
 
-train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
+train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype("float32")
 train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
 
 # In[10]:
@@ -139,8 +139,11 @@ plt.imshow(generated_image[0, :, :, 0], cmap="gray")
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                            input_shape=[28, 28, 1]))
+    model.add(
+        layers.Conv2D(
+            64, (5, 5), strides=(2, 2), padding="same", input_shape=[28, 28, 1]
+        )
+    )
     model.add(layers.LeakyReLU())
     model.add(layers.Dropout(0.3))
 
@@ -215,10 +218,12 @@ discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 checkpoint_dir = "./training_checkpoints"
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
-                                 discriminator_optimizer=discriminator_optimizer,
-                                 generator=generator,
-                                 discriminator=discriminator)
+checkpoint = tf.train.Checkpoint(
+    generator_optimizer=generator_optimizer,
+    discriminator_optimizer=discriminator_optimizer,
+    generator=generator,
+    discriminator=discriminator,
+)
 
 # ## Define the training loop
 #
@@ -281,21 +286,17 @@ def train(dataset, epochs):
 
         # Produce images for the GIF as we go
         display.clear_output(wait=True)
-        generate_and_save_images(generator,
-                                 epoch + 1,
-                                 seed)
+        generate_and_save_images(generator, epoch + 1, seed)
 
         # Save the model every 15 epochs
         if (epoch + 1) % 15 == 0:
             checkpoint.save(file_prefix=checkpoint_prefix)
 
-        print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
+        print("Time for epoch {} is {} sec".format(epoch + 1, time.time() - start))
 
     # Generate after the final epoch
     display.clear_output(wait=True)
-    generate_and_save_images(generator,
-                             epochs,
-                             seed)
+    generate_and_save_images(generator, epochs, seed)
 
 
 # **Generate and save images**
@@ -314,10 +315,10 @@ def generate_and_save_images(model, epoch, test_input):
 
     for i in range(predictions.shape[0]):
         plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
-        plt.axis('off')
+        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap="gray")
+        plt.axis("off")
 
-    plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
+    plt.savefig("image_at_epoch_{:04d}.png".format(epoch))
     plt.show()
 
 
@@ -347,7 +348,7 @@ checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
 # Display a single image using the epoch number
 def display_image(epoch_no):
-    return PIL.Image.open('image_at_epoch_{:04d}.png'.format(epoch_no))
+    return PIL.Image.open("image_at_epoch_{:04d}.png".format(epoch_no))
 
 
 # In[28]:
@@ -362,8 +363,8 @@ display_image(EPOCHS)
 
 anim_file = "dcgan.gif"
 
-with imageio.get_writer(anim_file, mode='I') as writer:
-    filenames = glob.glob('image*.png')
+with imageio.get_writer(anim_file, mode="I") as writer:
+    filenames = glob.glob("image*.png")
     filenames = sorted(filenames)
     last = -1
     for i, filename in enumerate(filenames):
@@ -379,7 +380,7 @@ with imageio.get_writer(anim_file, mode='I') as writer:
 
 import IPython
 
-if IPython.version_info > (6, 2, 0, ''):
+if IPython.version_info > (6, 2, 0, ""):
     display.Image(filename=anim_file)
 
 # If you're working in Colab you can download the animation with the code below:
