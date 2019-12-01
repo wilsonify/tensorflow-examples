@@ -32,16 +32,15 @@ The following animation shows a series of images produced by the *generator* as 
 # 
 # To learn more about GANs, we recommend MIT's [Intro to Deep Learning](http://introtodeeplearning.com/) course.
 """
-import logging
-
-import tensorflow as tf
 import glob
+import logging
+import os
+import time
+
+import PIL
 import imageio
 import matplotlib.pyplot as plt
-import numpy as np
-import os
-import PIL
-import time
+import tensorflow as tf
 from IPython import display
 
 logging.info("tensorflow version = {}".format(tf.__version__))
