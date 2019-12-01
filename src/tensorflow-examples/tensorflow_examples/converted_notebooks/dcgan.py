@@ -32,7 +32,6 @@ import imageio
 import matplotlib.pyplot as plt
 import os
 import PIL
-from tensorflow.keras import layers
 import time
 
 from IPython import display
@@ -75,40 +74,40 @@ train_dataset = (
 
 # ### The Generator
 #
-# The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling) layers to produce an image from a seed (random noise). Start with a `Dense` layer that takes this seed as input, then upsample several times until you reach the desired image size of 28x28x1. Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
+# The generator uses `tf.keras.tf.keras.layers.Conv2DTranspose` (upsampling) tf.keras.layers.to produce an image from a seed (random noise). Start with a `Dense` layer that takes this seed as input, then upsample several times until you reach the desired image size of 28x28x1. Notice the `tf.keras.tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
 
 # In[12]:
 
 
 def make_generator_model():
     model = tf.keras.Sequential()
-    model.add(layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(100,)))
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
+    model.add(tf.keras.layers.Dense(7 * 7 * 256, use_bias=False, input_shape=(100,)))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
 
-    model.add(layers.Reshape((7, 7, 256)))
+    model.add(tf.keras.layers.Reshape((7, 7, 256)))
     assert model.output_shape == (None, 7, 7, 256)  # Note: None is the batch size
 
     model.add(
-        layers.Conv2DTranspose(
+        tf.keras.layers.Conv2DTranspose(
             128, (5, 5), strides=(1, 1), padding="same", use_bias=False
         )
     )
     assert model.output_shape == (None, 7, 7, 128)
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
 
     model.add(
-        layers.Conv2DTranspose(
+        tf.keras.layers.Conv2DTranspose(
             64, (5, 5), strides=(2, 2), padding="same", use_bias=False
         )
     )
     assert model.output_shape == (None, 14, 14, 64)
-    model.add(layers.BatchNormalization())
-    model.add(layers.LeakyReLU())
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.LeakyReLU())
 
     model.add(
-        layers.Conv2DTranspose(
+        tf.keras.layers.Conv2DTranspose(
             1, (5, 5), strides=(2, 2), padding="same", use_bias=False, activation="tanh"
         )
     )
@@ -140,19 +139,19 @@ plt.imshow(generated_image[0, :, :, 0], cmap="gray")
 def make_discriminator_model():
     model = tf.keras.Sequential()
     model.add(
-        layers.Conv2D(
+        tf.keras.layers.Conv2D(
             64, (5, 5), strides=(2, 2), padding="same", input_shape=[28, 28, 1]
         )
     )
-    model.add(layers.LeakyReLU())
-    model.add(layers.Dropout(0.3))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
 
-    model.add(layers.Conv2D(128, (5, 5), strides=(2, 2), padding="same"))
-    model.add(layers.LeakyReLU())
-    model.add(layers.Dropout(0.3))
+    model.add(tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding="same"))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
 
-    model.add(layers.Flatten())
-    model.add(layers.Dense(1))
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(1))
 
     return model
 
@@ -308,7 +307,7 @@ def train(dataset, epochs):
 
 def generate_and_save_images(model, epoch, test_input):
     # Notice `training` is set to False.
-    # This is so all layers run in inference mode (batchnorm).
+    # This is so all tf.keras.layers.run in inference mode (batchnorm).
     predictions = model(test_input, training=False)
 
     fig = plt.figure(figsize=(4, 4))
