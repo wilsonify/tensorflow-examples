@@ -12,7 +12,7 @@ import tensorflow as tf
 def main():
     tf.compat.v1.disable_eager_execution()
     elems = np.array(["T", "e", "n", "s", "o", "r", " ", "F", "l", "o", "w"])
-    scan_sum = tf.scan(lambda a, x: a + x, elems)
+    scan_sum = tf.compat.v1.scan(lambda a, x: a + x, elems)
 
     sess = tf.compat.v1.InteractiveSession()
     sess.run(scan_sum)
