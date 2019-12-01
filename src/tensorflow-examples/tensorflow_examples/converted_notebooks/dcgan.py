@@ -1,46 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# ##### Copyright 2019 The TensorFlow Authors.
-
-# In[1]:
-
-
-# @title Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+"""
 
 # # Deep Convolutional Generative Adversarial Network
-
-# <table class="tfo-notebook-buttons" align="left">
-#   <td>
-#     <a target="_blank" href="https://www.tensorflow.org/tutorials/generative/dcgan">
-#     <img src="https://www.tensorflow.org/images/tf_logo_32px.png" />
-#     View on TensorFlow.org</a>
-#   </td>
-#   <td>
-#     <a target="_blank" href="https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tutorials/generative/dcgan.ipynb">
-#     <img src="https://www.tensorflow.org/images/colab_logo_32px.png" />
-#     Run in Google Colab</a>
-#   </td>
-#   <td>
-#     <a target="_blank" href="https://github.com/tensorflow/docs/blob/master/site/en/tutorials/generative/dcgan.ipynb">
-#     <img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />
-#     View source on GitHub</a>
-#   </td>
-#   <td>
-#     <a href="https://storage.googleapis.com/tensorflow_docs/docs/site/en/tutorials/generative/dcgan.ipynb"><img src="https://www.tensorflow.org/images/download_logo_32px.png" />Download notebook</a>
-#   </td>
-# </table>
 
 # This tutorial demonstrates how to generate images of handwritten digits using a [Deep Convolutional Generative Adversarial Network](https://arxiv.org/pdf/1511.06434.pdf) (DCGAN). The code is written using the [Keras Sequential API](https://www.tensorflow.org/guide/keras) with a `tf.GradientTape` training loop.
 
@@ -58,41 +20,12 @@
 # ![sample output](https://tensorflow.org/images/gan/dcgan.gif)
 #
 # To learn more about GANs, we recommend MIT's [Intro to Deep Learning](http://introtodeeplearning.com/) course.
-
-# ### Import TensorFlow and other libraries
-
-# In[2]:
-
-
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-# In[3]:
-
-
-try:
-    # %tensorflow_version only exists in Colab.
-    get_ipython().run_line_magic("tensorflow_version", "2.x")
-except Exception:
-    pass
-
-# In[4]:
-
+"""
+import logging
 
 import tensorflow as tf
 
-# In[5]:
-
-
-tf.__version__
-
-# In[6]:
-
-
-# To generate GIFs
-get_ipython().system("pip install -q imageio")
-
-# In[7]:
-
+logging.info("tensorflow version = {}".format(tf.__version__))
 
 import glob
 import imageio
@@ -116,7 +49,7 @@ from IPython import display
 # In[9]:
 
 
-train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype("float32")
+train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
 train_images = (train_images - 127.5) / 127.5  # Normalize the images to [-1, 1]
 
 # In[10]:
@@ -206,11 +139,8 @@ plt.imshow(generated_image[0, :, :, 0], cmap="gray")
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(
-        layers.Conv2D(
-            64, (5, 5), strides=(2, 2), padding="same", input_shape=[28, 28, 1]
-        )
-    )
+    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
+                            input_shape=[28, 28, 1]))
     model.add(layers.LeakyReLU())
     model.add(layers.Dropout(0.3))
 
@@ -285,12 +215,10 @@ discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 checkpoint_dir = "./training_checkpoints"
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-checkpoint = tf.train.Checkpoint(
-    generator_optimizer=generator_optimizer,
-    discriminator_optimizer=discriminator_optimizer,
-    generator=generator,
-    discriminator=discriminator,
-)
+checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
+                                 discriminator_optimizer=discriminator_optimizer,
+                                 generator=generator,
+                                 discriminator=discriminator)
 
 # ## Define the training loop
 #
@@ -353,17 +281,21 @@ def train(dataset, epochs):
 
         # Produce images for the GIF as we go
         display.clear_output(wait=True)
-        generate_and_save_images(generator, epoch + 1, seed)
+        generate_and_save_images(generator,
+                                 epoch + 1,
+                                 seed)
 
         # Save the model every 15 epochs
         if (epoch + 1) % 15 == 0:
             checkpoint.save(file_prefix=checkpoint_prefix)
 
-        print("Time for epoch {} is {} sec".format(epoch + 1, time.time() - start))
+        print('Time for epoch {} is {} sec'.format(epoch + 1, time.time() - start))
 
     # Generate after the final epoch
     display.clear_output(wait=True)
-    generate_and_save_images(generator, epochs, seed)
+    generate_and_save_images(generator,
+                             epochs,
+                             seed)
 
 
 # **Generate and save images**
@@ -382,10 +314,10 @@ def generate_and_save_images(model, epoch, test_input):
 
     for i in range(predictions.shape[0]):
         plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap="gray")
-        plt.axis("off")
+        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
+        plt.axis('off')
 
-    plt.savefig("image_at_epoch_{:04d}.png".format(epoch))
+    plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
     plt.show()
 
 
@@ -415,7 +347,7 @@ checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
 # Display a single image using the epoch number
 def display_image(epoch_no):
-    return PIL.Image.open("image_at_epoch_{:04d}.png".format(epoch_no))
+    return PIL.Image.open('image_at_epoch_{:04d}.png'.format(epoch_no))
 
 
 # In[28]:
@@ -430,8 +362,8 @@ display_image(EPOCHS)
 
 anim_file = "dcgan.gif"
 
-with imageio.get_writer(anim_file, mode="I") as writer:
-    filenames = glob.glob("image*.png")
+with imageio.get_writer(anim_file, mode='I') as writer:
+    filenames = glob.glob('image*.png')
     filenames = sorted(filenames)
     last = -1
     for i, filename in enumerate(filenames):
@@ -447,7 +379,7 @@ with imageio.get_writer(anim_file, mode="I") as writer:
 
 import IPython
 
-if IPython.version_info > (6, 2, 0, ""):
+if IPython.version_info > (6, 2, 0, ''):
     display.Image(filename=anim_file)
 
 # If you're working in Colab you can download the animation with the code below:
