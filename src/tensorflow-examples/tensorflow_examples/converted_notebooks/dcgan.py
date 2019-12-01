@@ -35,9 +35,6 @@ The following animation shows a series of images produced by the *generator* as 
 import logging
 
 import tensorflow as tf
-
-logging.info("tensorflow version = {}".format(tf.__version__))
-
 import glob
 import imageio
 import matplotlib.pyplot as plt
@@ -45,12 +42,14 @@ import numpy as np
 import os
 import PIL
 import time
-import IPython
 from IPython import display
+
+logging.info("tensorflow version = {}".format(tf.__version__))
 
 # ### Load and prepare the dataset
 #
-# You will use the MNIST dataset to train the generator and the discriminator. The generator will generate handwritten digits resembling the MNIST data.
+# You will use the MNIST dataset to train the generator and the discriminator.
+# The generator will generate handwritten digits resembling the MNIST data.
 
 # In[8]:
 
@@ -73,20 +72,23 @@ BATCH_SIZE = 256
 
 
 # Batch and shuffle the data
-train_dataset = (
-    tf.data.Dataset.from_tensor_slices(train_images)
-        .shuffle(BUFFER_SIZE)
-        .batch(BATCH_SIZE)
-)
+train_dataset = tf.data.Dataset.from_tensor_slices(train_images) \
+    .shuffle(BUFFER_SIZE) \
+    .batch(BATCH_SIZE)
 
 
 # ## Create the models
 #
-# Both the generator and discriminator are defined using the [Keras Sequential API](https://www.tensorflow.org/guide/keras#sequential_model).
+# Both the generator and discriminator are defined using the
+# [Keras Sequential API](https://www.tensorflow.org/guide/keras#sequential_model).
 
 # ### The Generator
 #
-# The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling) tf.keras.layers.to produce an image from a seed (random noise). Start with a `Dense` layer that takes this seed as input, then upsample several times until you reach the desired image size of 28x28x1. Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
+# The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling)
+# tf.keras.layers.to produce an image from a seed (random noise).
+# Start with a `Dense` layer that takes this seed as input,
+# then upsample several times until you reach the desired image size of 28x28x1.
+# Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
 
 # In[12]:
 
@@ -168,7 +170,8 @@ def make_discriminator_model():
     return model
 
 
-# Use the (as yet untrained) discriminator to classify the generated images as real or fake. The model will be trained to output positive values for real images, and negative values for fake images.
+# Use the (as yet untrained) discriminator to classify the generated images as real or fake.
+# The model will be trained to output positive values for real images, and negative values for fake images.
 
 # In[15]:
 
@@ -191,7 +194,9 @@ cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 # ### Discriminator loss
 #
-# This method quantifies how well the discriminator is able to distinguish real images from fakes. It compares the discriminator's predictions on real images to an array of 1s, and the discriminator's predictions on fake (generated) images to an array of 0s.
+# This method quantifies how well the discriminator is able to distinguish real images from fakes.
+# It compares the discriminator's predictions on real images to an array of 1s,
+# and the discriminator's predictions on fake (generated) images to an array of 0s.
 
 # In[17]:
 
@@ -204,7 +209,10 @@ def discriminator_loss(real_output, fake_output):
 
 
 # ### Generator loss
-# The generator's loss quantifies how well it was able to trick the discriminator. Intuitively, if the generator is performing well, the discriminator will classify the fake images as real (or 1). Here, we will compare the discriminators decisions on the generated images to an array of 1s.
+# The generator's loss quantifies how well it was able to trick the discriminator.
+# Intuitively, if the generator is performing well,
+# the discriminator will classify the fake images as real (or 1).
+# Here, we will compare the discriminators decisions on the generated images to an array of 1s.
 
 # In[18]:
 
@@ -222,7 +230,8 @@ generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
 # ### Save checkpoints
-# This notebook also demonstrates how to save and restore models, which can be helpful in case a long running training task is interrupted.
+# This notebook also demonstrates how to save and restore models,
+# which can be helpful in case a long running training task is interrupted.
 
 # In[20]:
 
@@ -252,7 +261,11 @@ num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim])
 
 
-# The training loop begins with generator receiving a random seed as input. That seed is used to produce an image. The discriminator is then used to classify real images (drawn from the training set) and fakes images (produced by the generator). The loss is calculated for each of these models, and the gradients are used to update the generator and discriminator.
+# The training loop begins with generator receiving a random seed as input.
+# That seed is used to produce an image.
+# The discriminator is then used to classify real images
+# (drawn from the training set) and fakes images (produced by the generator).
+# The loss is calculated for each of these models, and the gradients are used to update the generator and discriminator.
 
 # In[22]:
 
@@ -334,9 +347,15 @@ def generate_and_save_images(model, epoch, test_input):
 
 
 # ## Train the model
-# Call the `train()` method defined above to train the generator and discriminator simultaneously. Note, training GANs can be tricky. It's important that the generator and discriminator do not overpower each other (e.g., that they train at a similar rate).
+# Call the `train()` method defined above to train the generator and discriminator simultaneously.
+# Note, training GANs can be tricky. It's important that the generator and discriminator do not overpower each other
+# (e.g., that they train at a similar rate).
 #
-# At the beginning of the training, the generated images look like random noise. As training progresses, the generated digits will look increasingly real. After about 50 epochs, they resemble MNIST digits. This may take about one minute / epoch with the default settings on Colab.
+# At the beginning of the training,
+# the generated images look like random noise.
+# As training progresses, the generated digits will look increasingly real.
+# After about 50 epochs, they resemble MNIST digits.
+# This may take about one minute / epoch with the default settings on Colab.
 
 # In[25]:
 
