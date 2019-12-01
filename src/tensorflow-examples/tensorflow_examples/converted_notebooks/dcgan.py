@@ -249,10 +249,10 @@ seed = tf.random.normal([num_examples_to_generate, noise_dim])
 # This annotation causes the function to be "compiled".
 @tf.function
 def train_step(images):
-    noise = tf.random.normal([BATCH_SIZE, noise_dim])
+    noise_rand = tf.random.normal([BATCH_SIZE, noise_dim])
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        generated_images = generator(noise, training=True)
+        generated_images = generator(noise_rand, training=True)
 
         real_output = discriminator(images, training=True)
         fake_output = discriminator(generated_images, training=True)
@@ -311,10 +311,10 @@ def generate_and_save_images(model, epoch, test_input):
     predictions = model(test_input, training=False)
 
     fig = plt.figure(figsize=(4, 4))
-
-    for i in range(predictions.shape[0]):
-        plt.subplot(4, 4, i + 1)
-        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap="gray")
+    logging.debug("%r", "fig.figsize = {}".format(fig.figsize))
+    for ind in range(predictions.shape[0]):
+        plt.subplot(4, 4, ind + 1)
+        plt.imshow(predictions[ind, :, :, 0] * 127.5 + 127.5, cmap="gray")
         plt.axis("off")
 
     plt.savefig("image_at_epoch_{:04d}.png".format(epoch))
