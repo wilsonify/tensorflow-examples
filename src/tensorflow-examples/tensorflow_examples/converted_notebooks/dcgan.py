@@ -74,7 +74,7 @@ train_dataset = (
 
 # ### The Generator
 #
-# The generator uses `tf.keras.tf.keras.layers.Conv2DTranspose` (upsampling) tf.keras.layers.to produce an image from a seed (random noise). Start with a `Dense` layer that takes this seed as input, then upsample several times until you reach the desired image size of 28x28x1. Notice the `tf.keras.tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
+# The generator uses `tf.keras.layers.Conv2DTranspose` (upsampling) tf.keras.layers.to produce an image from a seed (random noise). Start with a `Dense` layer that takes this seed as input, then upsample several times until you reach the desired image size of 28x28x1. Notice the `tf.keras.layers.LeakyReLU` activation for each layer, except the output layer which uses tanh.
 
 # In[12]:
 
