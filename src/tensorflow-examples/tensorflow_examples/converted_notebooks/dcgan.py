@@ -15,21 +15,15 @@ are one of the most interesting ideas in computer science today.
  Two models are trained simultaneously by an adversarial process.
  A *generator* ("the artist") learns to create images that look real,
  while a *discriminator* ("the art critic") learns to tell real images apart from fakes.
-#
 # ![A diagram of a generator and discriminator](./images/gan1.png)
-#
 # During training, the *generator* progressively becomes better at creating images that look real,
 while the *discriminator* becomes better at telling them apart.
  The process reaches equilibrium when the *discriminator* can no longer distinguish real images from fakes.
-#
 # ![A second diagram of a generator and discriminator](./images/gan2.png)
-#
 # This notebook demonstrates this process on the MNIST dataset.
 The following animation shows a series of images produced by the *generator* as it was trained for 50 epochs.
  The images begin as random noise, and increasingly resemble hand written digits over time.
-#
 # ![sample output](https://tensorflow.org/images/gan/dcgan.gif)
-#
 # To learn more about GANs, we recommend MIT's [Intro to Deep Learning](http://introtodeeplearning.com/) course.
 """
 import glob
@@ -44,7 +38,6 @@ import tensorflow as tf
 from IPython import display
 
 # ### Load and prepare the dataset
-#
 # You will use the MNIST dataset to train the generator and the discriminator.
 # The generator will generate handwritten digits resembling the MNIST data.
 
@@ -180,9 +173,7 @@ DECISION = DISCRIMINATOR(GENERATED_IMAGE)
 print(DECISION)
 
 # ## Define the loss and optimizers
-#
 # Define loss functions and optimizers for both models.
-#
 
 # In[16]:
 
@@ -253,9 +244,6 @@ CHECKPOINT = tf.train.Checkpoint(
 )
 
 # ## Define the training loop
-#
-#
-
 # In[21]:
 
 
@@ -341,9 +329,6 @@ def train(dataset, epochs):
     generate_and_save_images(GENERATOR, epochs, SEED)
 
 
-#
-#
-
 # In[24]:
 
 
@@ -376,7 +361,6 @@ def generate_and_save_images(model, epoch, test_input):
 # Call the `train()` method defined above to train the generator and discriminator simultaneously.
 # Note, training GANs can be tricky. It's important that the generator and discriminator do not overpower each other
 # (e.g., that they train at a similar rate).
-#
 # At the beginning of the training,
 # the generated images look like random noise.
 # As training progresses, the generated digits will look increasingly real.
@@ -397,7 +381,6 @@ CHECKPOINT.restore(tf.train.latest_checkpoint(CHECKPOINT_DIR))
 
 
 # ## Create a GIF
-#
 
 # In[27]:
 
@@ -439,7 +422,6 @@ with imageio.get_writer(ANIM_FILE, mode="I") as writer:
 display.Image(filename=ANIM_FILE)
 
 # ## Next steps
-#
 
 # This tutorial has shown the complete code necessary to write and train a GAN.
 # As a next step, you might like to experiment with a different dataset,
@@ -447,4 +429,3 @@ display.Image(filename=ANIM_FILE)
 # [available on Kaggle](https://www.kaggle.com/jessicali9530/celeba-dataset/home).
 # To learn more about GANs we recommend the [NIPS 2016 Tutorial:
 # Generative Adversarial Networks](https://arxiv.org/abs/1701.00160).
-#
