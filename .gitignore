@@ -152,3 +152,7 @@ data/
 .cw-settings
 
 logs/
+
+# tensorflow events
+*.tfevents.*
+*.trace
