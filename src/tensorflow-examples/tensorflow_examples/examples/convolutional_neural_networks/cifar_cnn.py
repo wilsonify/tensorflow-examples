@@ -8,8 +8,7 @@ import tensorflow as tf
 from tensorflow_examples.layers import conv_layer, max_pool_2x2, full_layer
 
 HOME_DIR = os.path.expanduser("~")
-ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads",
-                            "cifar-10-python.tar.gz")  # manually download and extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz")
 DATA_DIR = os.path.join(HOME_DIR, "Downloads", "cifar-10-python")
 BATCH_DIR = os.path.join(DATA_DIR, "cifar-10-batches-py")
 BATCH_SIZE = 50
@@ -24,6 +23,9 @@ def one_hot(vec, vals=10):
 
 
 def unzip(file_name, destination_dir=DATA_DIR):
+    extractor = tarfile.open
+    compression_type = 'gz'
+    read_mode = "r:{}".format(compression_type)
     if file_name.endswith(".tar.gz"):
         extractor = tarfile.open
         compression_type = 'gz'
@@ -44,7 +46,7 @@ def unzip(file_name, destination_dir=DATA_DIR):
 
 def unpickle(file):
     with open(os.path.join(BATCH_DIR, file), 'rb') as fo:
-        u = pickle._Unpickler(fo)
+        u = pickle.Unpickler(fo)
         u.encoding = 'latin1'
         dict = u.load()
     return dict
@@ -204,5 +206,26 @@ def create_cifar_image():
 
 
 if __name__ == "__main__":
+    if not os.path.isdir(BATCH_DIR):
+        print(f"BATCH_DIR={BATCH_DIR} does not exist")
+        print(f"download and/or extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz")
+        if not os.path.isfile(ARCHIVE_PATH):
+            print(f'{ARCHIVE_PATH} does not exist')
+            import wget
+
+            url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+            print(f'download url={url}')
+            wget.download(url, ARCHIVE_PATH)
+            print(f'download complete')
+        else:
+            print(f'unzipping {ARCHIVE_PATH} to {BATCH_DIR}')
+            unzip(ARCHIVE_PATH, DATA_DIR)
+            print(f'unzipping complete')
+
+    print("create cifar image")
     create_cifar_image()
+    print("done with create cifar image")
+
+    print("run simple net")
     run_simple_net()
+    print("done with run simple net")
