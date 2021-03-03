@@ -46,8 +46,7 @@ def unzip(file_name, destination_dir=DATA_DIR):
 
 def unpickle(file):
     with open(os.path.join(BATCH_DIR, file), 'rb') as fo:
-        u = pickle.Unpickler(fo)
-        u.encoding = 'latin1'
+        u = pickle.Unpickler(fo, encoding = 'latin1')
         dict = u.load()
     return dict
 
@@ -212,15 +211,13 @@ if __name__ == "__main__":
         if not os.path.isfile(ARCHIVE_PATH):
             print(f'{ARCHIVE_PATH} does not exist')
             import wget
-
             url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
             print(f'download url={url}')
             wget.download(url, ARCHIVE_PATH)
             print(f'download complete')
-        else:
-            print(f'unzipping {ARCHIVE_PATH} to {BATCH_DIR}')
-            unzip(ARCHIVE_PATH, DATA_DIR)
-            print(f'unzipping complete')
+        print(f'unzipping {ARCHIVE_PATH} to {BATCH_DIR}')
+        unzip(ARCHIVE_PATH, DATA_DIR)
+        print(f'unzipping complete')
 
     print("create cifar image")
     create_cifar_image()
