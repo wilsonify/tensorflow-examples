@@ -204,7 +204,7 @@ def create_cifar_image():
     display_cifar(images, 10)
 
 
-if __name__ == "__main__":
+def main():
     if not os.path.isdir(BATCH_DIR):
         print(f"BATCH_DIR={BATCH_DIR} does not exist")
         print(f"download and/or extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz")
@@ -227,3 +227,30 @@ if __name__ == "__main__":
     print("run simple net")
     run_simple_net()
     print("done with run simple net")
+
+
+def download_data():
+    HOME_DIR = os.path.expanduser("~")
+    ARCHIVE_PATH = os.path.join(HOME_DIR, "Downloads", "cifar-10-python.tar.gz")
+    DATA_DIR = os.path.join(HOME_DIR, "Downloads", "cifar-10-python")
+    BATCH_DIR = os.path.join(DATA_DIR, "cifar-10-batches-py")
+    BATCH_SIZE = 50
+    STEPS = 500000
+    if not os.path.isdir(BATCH_DIR):
+        print(f"BATCH_DIR={BATCH_DIR} does not exist")
+        print(f"download and/or extract https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz")
+        if not os.path.isfile(ARCHIVE_PATH):
+            import wget
+            print(f'{ARCHIVE_PATH} does not exist')
+            url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+            print(f'download url={url}')
+            wget.download(url, ARCHIVE_PATH)
+            print(f'download complete')
+        else:
+            print(f'unzipping {ARCHIVE_PATH} to {BATCH_DIR}')
+            unzip(ARCHIVE_PATH, DATA_DIR)
+            print(f'unzipping complete')
+
+
+if __name__ == "__main__":
+    main()

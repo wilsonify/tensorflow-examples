@@ -16,8 +16,11 @@ def conv2d(x, W):
 
 
 def max_pool_2x2(x):
-    return tf.nn.max_pool2d(input=x, ksize=[1, 2, 2, 1],
-                          strides=[1, 2, 2, 1], padding='SAME')
+    return tf.nn.max_pool2d(
+        input=x,
+        ksize=[1, 2, 2, 1],
+        strides=[1, 2, 2, 1], padding='SAME'
+    )
 
 
 def conv_layer(input, shape):
