@@ -1,5 +1,6 @@
 import pytest
-from tensorflow_examples.examples.convolutional_neural_networks import cifar_cnn
+
+from tensorflow_examples import cifar_cnn
 
 
 @pytest.fixture
