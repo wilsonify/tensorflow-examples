@@ -9,7 +9,6 @@ from __future__ import print_function
 import logging
 
 import tensorflow as tf
-from keras.datasets.mnist import load_data
 
 from tensorflow_examples.c04_convolutional_neural_networks.mnist_cnn import MnistLoader
 
